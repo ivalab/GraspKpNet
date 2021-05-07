@@ -56,7 +56,7 @@ Please refer to for [INSTALL.md](readme/INSTALL.md) installation instructions.
 
 ## Dataset
 The two training datasets are provided here:
-- Cornell: [Download link]()
+- Cornell: [Download link](https://www.dropbox.com/sh/x4t8p2wrqnfevo3/AAC2gLawRtm-986_JWxE0w0Za?dl=0)
 - Abridged Jacquard Dataset (AJD):[Download link](https://www.dropbox.com/sh/nikrxio9mbkxpub/AADpt-6MKbZFEO8wCmbT1Y3xa?dl=0).
 
 ## Usage
