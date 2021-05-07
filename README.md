@@ -91,6 +91,11 @@ If you are interested in training GKNet on a new or customized dataset, please r
 
 ## Physical Experiments
 
+## Appendix
+This section collects results of some experiments which aren't documented in the manuscript due to the lack of enough scientific values.
+### Tuning hyper-parameters of alpha, beta and gamma.
+The result is recorded in [Tune_hp]() 
+
 ## License
 GKNet is released under the MIT License (refer to the LICENSE file for details).
 Portions of the code are borrowed from [CenterNet](https://github.com/xingyizhou/CenterNet), [dla](https://github.com/ucbdrive/dla) (DLA network), [DCNv2](https://github.com/CharlesShang/DCNv2)(deformable convolutions). Please refer to the original License of these projects (See [Notice](https://github.com/ivalab/GKNet/blob/master/NOTICE)).
