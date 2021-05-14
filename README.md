@@ -56,7 +56,7 @@ Please refer to for [INSTALL.md](readme/INSTALL.md) installation instructions.
 
 ## Dataset
 The two training datasets are provided here:
-- Cornell: [Download link]()
+- Cornell: [Download link](https://www.dropbox.com/sh/x4t8p2wrqnfevo3/AAC2gLawRtm-986_JWxE0w0Za?dl=0)
 - Abridged Jacquard Dataset (AJD):[Download link](https://www.dropbox.com/sh/nikrxio9mbkxpub/AADpt-6MKbZFEO8wCmbT1Y3xa?dl=0).
 
 ## Usage
@@ -78,18 +78,23 @@ You can evaluate your own trained models or download [pretrained models](https:/
 
 For evaluating the Cornell Dataset:
 ~~~
-python test.py dbmctdet_cornell --exp_id dla34_test --arch dla_34 --dataset cornell --flag_test --load_model ../models/model_dla34_cornell.pth --ae_threshold 1.0 --ori_threshold 0.24 --center_threshold 0.05
+python test.py dbmctdet_cornell --exp_id dla34_test --arch dla_34 --dataset cornell --fix_res --flag_test --load_model ../models/model_dla34_cornell.pth --ae_threshold 1.0 --ori_threshold 0.24 --center_threshold 0.05
 ~~~
 
 For evaluating AJD:
 ~~~
-python test.py dbmctdet --exp_id dla34_test --arch dla_34 --dataset jac_coco_36 --flag_test --load_model ../models/model_dla34_ajd.pth --ae_threshold 0.65 --ori_threshold 0.1745 --center_threshold 0.15
+python test.py dbmctdet --exp_id dla34_test --arch dla_34 --dataset jac_coco_36 --fix_res --flag_test --load_model ../models/model_dla34_ajd.pth --ae_threshold 0.65 --ori_threshold 0.1745 --center_threshold 0.15
 ~~~
 
 ## Develop
 If you are interested in training GKNet on a new or customized dataset, please refer to [DEVELOP.md](https://github.com/ivalab/GKNet/blob/master/readme/DEVELOP.md). Also you can leave your issues here if you meet some problems.
 
 ## Physical Experiments
+
+## Appendix
+This section collects results of some experiments which aren't documented in the manuscript due to the lack of enough scientific values.
+### Tuning hyper-parameters of alpha, beta and gamma.
+The result is recorded in [Tune_hp](https://github.com/ivalab/GraspKpNet/blob/main/readme/tune_kp.md) 
 
 ## License
 GKNet is released under the MIT License (refer to the LICENSE file for details).
