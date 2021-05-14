@@ -225,7 +225,7 @@ class opts(object):
     opt.lr_step = [int(i) for i in opt.lr_step.split(',')]
     opt.test_scales = [float(i) for i in opt.test_scales.split(',')]
 
-    opt.fix_res = not opt.keep_res
+    # opt.fix_res = not opt.keep_res
     print('Fix size testing.' if opt.fix_res else 'Keep resolution testing.')
     opt.reg_offset = not opt.not_reg_offset
     opt.reg_bbox = not opt.not_reg_bbox

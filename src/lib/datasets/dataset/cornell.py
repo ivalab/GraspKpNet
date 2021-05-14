@@ -17,7 +17,7 @@ from datasets.dataset.utils import _bbox_overlaps_counterclock, rotate_bbox_coun
 class CORNELL(data.Dataset):
     num_classes = 18
     num_ct_classes = 1
-    default_resolution = [227, 227]
+    default_resolution = [256, 256]
     mean = np.array([0.850092, 0.805317, 0.247344],
                     dtype=np.float32).reshape(1, 1, 3)
     std = np.array([0.104114, 0.113242, 0.089067],
@@ -48,7 +48,7 @@ class CORNELL(data.Dataset):
         self.split = split
         self.opt = opt
 
-        self.data_dir = os.path.join(opt.data_dir, 'Cornell/')
+        self.data_dir = os.path.join(opt.data_dir, 'Cornell/rgd_5_5_5_corner_p_full_data')
         self.img_dir = os.path.join(self.data_dir, 'Images')
         self.annot_path = os.path.join(self.data_dir, 'Annotations')
         self.filelist_dir = os.path.join(self.data_dir, 'ImageSets', '{}.txt'.format(split))
