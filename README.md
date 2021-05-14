@@ -78,12 +78,12 @@ You can evaluate your own trained models or download [pretrained models](https:/
 
 For evaluating the Cornell Dataset:
 ~~~
-python test.py dbmctdet_cornell --exp_id dla34_test --arch dla_34 --dataset cornell --flag_test --load_model ../models/model_dla34_cornell.pth --ae_threshold 1.0 --ori_threshold 0.24 --center_threshold 0.05
+python test.py dbmctdet_cornell --exp_id dla34_test --arch dla_34 --dataset cornell --fix_res --flag_test --load_model ../models/model_dla34_cornell.pth --ae_threshold 1.0 --ori_threshold 0.24 --center_threshold 0.05
 ~~~
 
 For evaluating AJD:
 ~~~
-python test.py dbmctdet --exp_id dla34_test --arch dla_34 --dataset jac_coco_36 --flag_test --load_model ../models/model_dla34_ajd.pth --ae_threshold 0.65 --ori_threshold 0.1745 --center_threshold 0.15
+python test.py dbmctdet --exp_id dla34_test --arch dla_34 --dataset jac_coco_36 --fix_res --flag_test --load_model ../models/model_dla34_ajd.pth --ae_threshold 0.65 --ori_threshold 0.1745 --center_threshold 0.15
 ~~~
 
 ## Develop
