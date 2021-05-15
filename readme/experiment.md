@@ -48,6 +48,9 @@ experienced for some real-world deployments, thus providing reliable grasp predi
 grasp detection approaches.
 
 ### Command of running robotic grasping detection
+```
+python bin_picking.py dbmctdet --exp_id bin_picking --arch dlanonlocal_34 --dataset jac_coco_36 --load_model ../models/model_dla34_ajd.pth --ae_threshold 0.65 --ori_threshold 0.1745 --center_threshold 0.15
+```
 
 ### Running ROS-side scripts
-python bin_picking.py dbmctdet --exp_id bin_picking --arch dlanonlocal_34 --dataset jac_coco_36 --load_model ../models/model_dla34_ajd.pth --ae_threshold 0.65 --ori_threshold 0.1745 --center_threshold 0.15
+
