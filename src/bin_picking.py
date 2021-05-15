@@ -300,6 +300,7 @@ def run(opt, pipeline, align, depth_scale, pub_res, pub_end):
         # check if pick bin has been cleared
         if isPickbinClear(M_CL, depth_raw):
             pub_end.publish(True)
+            break
         else:
             pub_end.publish(False)
 
