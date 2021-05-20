@@ -1,7 +1,7 @@
 # GKNet
 Grasp Keypoint Network for Grasp Candidates Detection
 
-![](https://github.com/ivalab/GraspKpNet/blob/master/demo/fig_ill_mul_resized.png)
+![](https://github.com/ivalab/GraspKpNet/blob/main/demo/fig_ill_mul_resized.png)
 
 >[**GKNet: grasp keypoint network for Grasp Candidates Detection**](),
 
