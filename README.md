@@ -7,6 +7,19 @@ Grasp Keypoint Network for Grasp Candidates Detection
 
 > Ruinian Xu, Fu-Jen Chu and Patricio A. Vela
 
+## Table of Contents
+- [Abstract](#Abstract)
+- [Highlights](#Highlights)
+- [Vision Benchmark Results](#Vision-Benchmark-Results)
+  * [Cornell](#Grasp-detection-on-the-Cornell-Dataset)
+  * [AJD](#Grasp-detection-on-the-AJD)
+- [Installation](#Installation)
+- [Dataset](#Dataset)
+- [Usage](#Usage)
+- [Develop](#Develop)
+- [Physical Experiments](#Physical-Experiments)
+- [Appendix](#Appendix)
+
 ## Abstract
 Contemporary grasp detection approaches employ deep learning to achieve robustness to sensor and object model
 uncertainty. The two dominant approaches design either grasp-quality scoring or anchor-based grasp recognition
