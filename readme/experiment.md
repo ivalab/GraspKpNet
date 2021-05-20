@@ -39,7 +39,7 @@ python bin_picking.py dbmctdet --exp_id bin_picking --arch dlanonlocal_34 --data
 3. Install camera driver for [Realsense](https://github.com/IntelRealSense/librealsense).
 4. Download [ivaHandy](https://github.com/ivaROS/ivaHandy/tree/master/ros) and compile it under your ROS workspace for experiment codebase. 
 5. Download [handy_experiment](https://github.com/ivaROS/handy_experiment) package and compile it under your ROS workspace for experiment codebase.
-6. Run all setups step by step
+6. Run all launch files for setup step by step.
 ```
 cd handy_ws
 roslaunch finalarm_cotrol controller_manager.launch
