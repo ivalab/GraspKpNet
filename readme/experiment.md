@@ -35,10 +35,11 @@ python bin_picking.py dbmctdet --exp_id bin_picking --arch dlanonlocal_34 --data
 
 ## ROS
 1. Install [ROS](http://wiki.ros.org/ROS/Installation).
-2. Install camera driver for [Realsense](https://github.com/IntelRealSense/librealsense).
-3. Download [ivaHandy](https://github.com/ivaROS/ivaHandy/tree/master/ros) and compile it under your ROS workspace for experiment codebase. 
-4. Download [handy_experiment](https://github.com/ivaROS/handy_experiment) package and compile it under your ROS workspace for experiment codebase.
-5. Run all setups step by step
+2. Install [MoveIt!](https://moveit.ros.org/install/).
+3. Install camera driver for [Realsense](https://github.com/IntelRealSense/librealsense).
+4. Download [ivaHandy](https://github.com/ivaROS/ivaHandy/tree/master/ros) and compile it under your ROS workspace for experiment codebase. 
+5. Download [handy_experiment](https://github.com/ivaROS/handy_experiment) package and compile it under your ROS workspace for experiment codebase.
+6. Run all setups step by step
 ```
 cd handy_ws
 roslaunch finalarm_cotrol controller_manager.launch
@@ -51,7 +52,7 @@ You might meet the error after trying to launch the controller for each motor. T
 ```
 sudo chmod 666 /dev/ttyUSB0
 ```
-6. Run the corresponding script for each experiment.
+7. Run the corresponding script for each experiment.
 ```
 roslaunch handy_experiment static_grasp.launch
 roslaunch handy_expeirment dynamic_grasp.launch
