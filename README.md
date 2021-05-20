@@ -108,7 +108,7 @@ To run physical experiments with GKNet and ROS, please follow the instructions p
 ## Appendix
 This section collects results of some experiments which aren't documented in the manuscript due to the lack of enough scientific values.
 ### Tuning hyper-parameters of alpha, beta and gamma.
-The result is recorded in [Tune_hp](https://github.com/ivalab/GraspKpNet/blob/main/readme/tune_kp.md) 
+The result is recorded in [tune_hp.md](https://github.com/ivalab/GraspKpNet/blob/main/readme/tune_kp.md) 
 
 ## License
 GKNet is released under the MIT License (refer to the LICENSE file for details).
