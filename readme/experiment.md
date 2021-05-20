@@ -47,7 +47,7 @@ roslaunch finalarm_description robot_state_pub.launch
 roslaunch finalarm_moveit_config move_group.launch
 roslaunch finalarm_moveit_config moveit_rviz.launch
 ```
-You might meet the error after trying to launch the controller for each motor, to fix the error, type 
+You might meet the error after trying to launch the controller for each motor. To fix the error, type 
 ```
 sudo chmod 666 /dev/ttyUSB0
 ```
