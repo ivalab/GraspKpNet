@@ -103,6 +103,7 @@ python test.py dbmctdet --exp_id dla34_test --arch dla_34 --dataset jac_coco_36 
 If you are interested in training GKNet on a new or customized dataset, please refer to [DEVELOP.md](https://github.com/ivalab/GKNet/blob/master/readme/DEVELOP.md). Also you can leave your issues here if you meet some problems.
 
 ## Physical Experiments
+To run physical experiments with GKNet and ROS, please follow the instructions provided in [Experiment.md](https://github.com/ivalab/GKNet/blob/master/readme/experiment.md)
 
 ## Appendix
 This section collects results of some experiments which aren't documented in the manuscript due to the lack of enough scientific values.
