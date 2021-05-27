@@ -57,7 +57,7 @@ sudo chmod 666 /dev/ttyUSB0
 ```
 7. Run camera driver
 ```
-roslaunch openni_launch openni.launch
+roslaunch openni_launch openni.launch depth_registration:=true
 ```
 8. Run the corresponding script for each experiment.
 ```
