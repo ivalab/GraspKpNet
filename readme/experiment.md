@@ -5,6 +5,9 @@ grasping and (d) bin picking. The design purpose of each experiment has been cla
 This readme file documents how to run all physical experiments presented in the manuscript, which mainly consists of Python and ROS codes. All experiments were conducted with Kinect Xbox 360 but considering the potential bugs happened with [Freenect](https://github.com/OpenKinect/libfreenect), codes with camera Realsense is provided here.
 
 ## Python
+Since ROS used Python 2.7 as default python library, to run the physical experiment, you will need to create another anaconda environment with python 2.7. Considering
+Pytorch dropped their support of newer versions for Python 2.7, you might need to install pytorch with a version that can be found and fit your Cuda version. If not, you
+might consider install another cuda with older version. For installing multiple Cuda,  you can refer to this [tutorial](https://towardsdatascience.com/installing-multiple-cuda-cudnn-versions-in-ubuntu-fcb6aa5194e2).
 
 ### Static Grasping
 This script will run GKNet to provide grasp detections via camera Realsense. The grasp detection results will be published on the ROS topic for ROS-side scripts to subscribe. 
@@ -36,7 +39,7 @@ python bin_picking.py dbmctdet --exp_id bin_picking --arch dlanonlocal_34 --data
 ## ROS
 1. Install [ROS](http://wiki.ros.org/ROS/Installation).
 2. Install [MoveIt!](https://moveit.ros.org/install/).
-3. Install camera driver for [Realsense](https://github.com/IntelRealSense/librealsense).
+3. Install camera driver for [Kinect](http://wiki.ros.org/openni_kinect).
 4. Download [ivaHandy](https://github.com/ivaROS/ivaHandy/tree/master/ros) and compile it under your ROS workspace for experiment codebase. 
 5. Download [handy_experiment](https://github.com/ivaROS/handy_experiment) package and compile it under your ROS workspace for experiment codebase.
 6. Run all launch files for setup step by step.
@@ -52,7 +55,11 @@ You might meet the error after trying to launch the controller for each motor. T
 ```
 sudo chmod 666 /dev/ttyUSB0
 ```
-7. Run the corresponding script for each experiment.
+7. Run camera driver
+```
+roslaunch openni_launch openni.launch
+```
+8. Run the corresponding script for each experiment.
 ```
 roslaunch handy_experiment static_grasp.launch
 roslaunch handy_expeirment dynamic_grasp.launch
