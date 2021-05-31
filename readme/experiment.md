@@ -5,7 +5,11 @@ grasping and (d) bin picking. The design purpose of each experiment has been cla
 This readme file documents how to run all physical experiments presented in the manuscript, which mainly consists of Python and ROS codes. All experiments were conducted with Kinect Xbox 360 but considering the potential bugs happened with [Freenect](https://github.com/OpenKinect/libfreenect), codes with camera Realsense is provided here.
 
 ## Python
-Since ROS used Python 2.7 as default python library, to run the physical experiment, you will need to create another anaconda environment with python 2.7. Considering
+We are supporting two types of cameras: Kinect Xbox 360 and Realsense D435. Personally I will recommend Realsense since Kinect is pretty old and its driver 
+isn't very stable. 
+To use Realsense D435, you just need to follow the installation instruction in the official [website]
+(https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md).
+To use Kinect Xbox 360, since ROS used Python 2.7 as default python library, to run the physical experiment, you will need to create another anaconda environment with python 2.7. Considering
 Pytorch dropped their support of newer versions for Python 2.7, you might need to install pytorch with a version that can be found and fit your Cuda version. If not, you
 might consider install another cuda with older version. For installing multiple Cuda,  you can refer to this [tutorial](https://towardsdatascience.com/installing-multiple-cuda-cudnn-versions-in-ubuntu-fcb6aa5194e2).
 
@@ -13,7 +17,7 @@ might consider install another cuda with older version. For installing multiple 
 This script will run GKNet to provide grasp detections via camera Realsense. The grasp detection results will be published on the ROS topic for ROS-side scripts to subscribe. 
 
 ```
-python static_grasp.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 1.0 --ori_threshold 0.24 --center_threshold 0.05
+python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 1.0 --ori_threshold 0.24 --center_threshold 0.05
 
 ```
 
@@ -21,7 +25,7 @@ python static_grasp.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --da
 This script will run GKNet to provide grasp detections via camera Realsense. The grasp detection results will be published on the ROS topic for ROS-side scripts to subscribe. 
 
 ```
-python static_grasp.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 1.0 --ori_threshold 0.24 --center_threshold 0.05
+python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 1.0 --ori_threshold 0.24 --center_threshold 0.05
 
 ```
 
@@ -33,7 +37,7 @@ This script will run GKNet to provide grasp detections via camera Realsense. The
 Additionally, this code will check if the pick bin is clean to determine if it is time to end the task. The result will also be published through ROS topic.
 
 ```
-python bin_picking.py dbmctdet --exp_id bin_picking --arch dlanonlocal_34 --dataset jac_coco_36 --load_model ../models/model_dla34_ajd.pth --ae_threshold 0.65 --ori_threshold 0.1745 --center_threshold 0.15
+python bin_picking_rl.py/bin_picking_kt.py dbmctdet --exp_id bin_picking --arch dlanonlocal_34 --dataset jac_coco_36 --load_model ../models/model_dla34_ajd.pth --ae_threshold 0.65 --ori_threshold 0.1745 --center_threshold 0.15
 ```
 
 ## ROS
