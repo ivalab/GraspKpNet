@@ -2,7 +2,7 @@
 The physical experiments of GKNet is composed of four different grasping experiments: (a) static grasping, (b) grasping at varied camera viewpoints, (c) dynamic 
 grasping and (d) bin picking. The design purpose of each experiment has been clarified in the manuscript. Please refer to Section 7 for details if interested.
 
-This readme file documents how to run all physical experiments presented in the manuscript, which mainly consists of Python and ROS codes. All experiments were conducted with Kinect Xbox 360 but considering the potential bugs happened with [Freenect](https://github.com/OpenKinect/libfreenect), codes with camera Realsense is provided here.
+This readme file documents how to run all physical experiments presented in the manuscript, which mainly consists of Python and ROS codes. All experiments in the manuscript were conducted with Kinect Xbox 360 but considering the potential bugs happened with old drivers, codes with camera Realsense is provided here.
 
 ## Python
 We are supporting two types of cameras: Kinect Xbox 360 and Realsense D435. Personally I will recommend Realsense since Kinect is pretty old and its driver 
