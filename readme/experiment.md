@@ -7,8 +7,7 @@ This readme file documents how to run all physical experiments presented in the 
 ## Python
 We are supporting two types of cameras: Kinect Xbox 360 and Realsense D435. Personally I will recommend Realsense since Kinect is pretty old and its driver 
 isn't very stable. 
-To use Realsense D435, you just need to follow the installation instruction in the official [website]
-(https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md).
+To use Realsense D435, you just need to follow the installation instruction in the official [website](https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md).
 To use Kinect Xbox 360, since ROS used Python 2.7 as default python library, to run the physical experiment, you will need to create another anaconda environment with python 2.7. Considering
 Pytorch dropped their support of newer versions for Python 2.7, you might need to install pytorch with a version that can be found and fit your Cuda version. If not, you
 might consider install another cuda with older version. For installing multiple Cuda,  you can refer to this [tutorial](https://towardsdatascience.com/installing-multiple-cuda-cudnn-versions-in-ubuntu-fcb6aa5194e2).
