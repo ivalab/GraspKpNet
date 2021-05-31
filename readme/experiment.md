@@ -16,7 +16,7 @@ might consider install another cuda with older version. For installing multiple 
 This script will run GKNet to provide grasp detections via camera Realsense. The grasp detection results will be published on the ROS topic for ROS-side scripts to subscribe. 
 
 ```
-python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 1.0 --ori_threshold 0.24 --center_threshold 0.05
+python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 1.0 --ori_threshold 0.24 --center_threshold 0.15 --scores_threshold 0.15
 
 ```
 
@@ -24,7 +24,7 @@ python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_g
 This script will run GKNet to provide grasp detections via camera Realsense. The grasp detection results will be published on the ROS topic for ROS-side scripts to subscribe. 
 
 ```
-python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 1.0 --ori_threshold 0.24 --center_threshold 0.05
+python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 1.0 --ori_threshold 0.24 --center_threshold 0.15 --scores_threshold 0.15
 
 ```
 
@@ -36,7 +36,7 @@ This script will run GKNet to provide grasp detections via camera Realsense. The
 Additionally, this code will check if the pick bin is clean to determine if it is time to end the task. The result will also be published through ROS topic.
 
 ```
-python bin_picking_rl.py/bin_picking_kt.py dbmctdet --exp_id bin_picking --arch dlanonlocal_34 --dataset jac_coco_36 --load_model ../models/model_dla34_ajd.pth --ae_threshold 0.65 --ori_threshold 0.1745 --center_threshold 0.15
+python bin_picking_rl.py/bin_picking_kt.py dbmctdet --exp_id bin_picking --arch dlanonlocal_34 --dataset jac_coco_36 --load_model ../models/model_dla34_ajd.pth --ae_threshold 0.65 --ori_threshold 0.1745 --center_threshold 0.15 --scores_threshold 0.15
 ```
 
 ## ROS
