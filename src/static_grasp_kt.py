@@ -9,11 +9,14 @@ import json
 import cv2
 import cv2.aruco as aruco
 import numpy as np
-import pyrealsense2 as rs
+import sys
 
 import rospy
 from std_msgs.msg import Bool
 from std_msgs.msg import Float64MultiArray
+from sensor_msgs.msg import Image, CameraInfo
+from cv_bridge import CvBridge, CvBridgeError
+import message_filters
 
 import torch
 
@@ -156,11 +159,6 @@ def kinect_rgbd_callback(rgb_data, depth_data):
         cv2.imshow("Depth", cv_depth)
         cv2.imshow("RGB", cv_rgb)
 
-        idx = int(len(os.listdir(SAVE_FOLDER)) / 2 + 1)
-        if idx <= 20:
-            cv2.imwrite(os.path.join(SAVE_FOLDER, 'color_image_{}.png'.format(idx)), cv_rgb_arr)
-            np.save(os.path.join(SAVE_FOLDER, 'depth_npy_{}.npy'.format(idx)), cv_depth_arr)
-
         img = cv_rgb_arr.copy()
         depth_raw = cv_depth_arr.copy()
 
@@ -186,8 +184,6 @@ def kinect_rgbd_callback(rgb_data, depth_data):
 
     except CvBridgeError as e:
         print(e)
-
-    return None
 
 def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, M_BL, cameraMatrix, visualize=True):
     kps_pr = []
