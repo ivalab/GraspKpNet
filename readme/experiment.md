@@ -43,7 +43,7 @@ python bin_picking_rl.py/bin_picking_kt.py dbmctdet --exp_id bin_picking --arch 
 ## ROS
 1. Install [ROS](http://wiki.ros.org/ROS/Installation).
 2. Install [MoveIt!](https://moveit.ros.org/install/).
-3. Install camera driver for [Kinect](http://wiki.ros.org/openni_kinect).
+3. Install camera driver for [Kinect](http://wiki.ros.org/openni_kinect) or [Realsense](https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md).
 4. Download [ivaHandy](https://github.com/ivaROS/ivaHandy/tree/master/ros) and compile it under your ROS workspace for experiment codebase. 
 5. Download [handy_experiment](https://github.com/ivaROS/handy_experiment) package and compile it under your ROS workspace for experiment codebase.
 6. Run all launch files for setup step by step.
