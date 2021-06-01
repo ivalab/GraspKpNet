@@ -16,7 +16,7 @@ might consider install another cuda with older version. For installing multiple 
 This script will run GKNet to provide grasp detections via camera Realsense. The grasp detection results will be published on the ROS topic for ROS-side scripts to subscribe. 
 
 ```
-python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 1.0 --ori_threshold 0.24 --center_threshold 0.15 --scores_threshold 0.15
+python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 0.6 --ori_threshold 0.24 --center_threshold 0.10 --scores_threshold 0.15 --center_weight 1.0
 
 ```
 
@@ -24,7 +24,7 @@ python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_g
 This script will run GKNet to provide grasp detections via camera Realsense. The grasp detection results will be published on the ROS topic for ROS-side scripts to subscribe. 
 
 ```
-python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 1.0 --ori_threshold 0.24 --center_threshold 0.15 --scores_threshold 0.15
+python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 0.6 --ori_threshold 0.24 --center_threshold 0.10 --scores_threshold 0.15 --center_weight 1.0
 
 ```
 
