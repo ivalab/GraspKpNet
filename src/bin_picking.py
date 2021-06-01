@@ -52,7 +52,7 @@ grip_bbx_h = 0.03
 
 ### experimental setup
 # height of the table
-z_table = # to be done
+z_table = -0.045
 
 # top-left of the pick bin
 pb_tl = []
@@ -97,10 +97,23 @@ def project_2d_3d(pixel, depth_image, M_CL):
      q_B: 3d coordinate of pixel with respect to base frame
      '''
     depth = depth_image[pixel[1], pixel[0]]
-    moving_pixel = [pixel[0], pixel[1]]
+
+    # if the depth of the detected pixel is 0, check the depth of its neighbors
+    # by counter-clock wise
+    nei_range = 1
     while depth == 0:
-        moving_pixel = [moving_pixel[0], moving_pixel[1]+1]
-        depth = depth_image[moving_pixel[1], moving_pixel[0]]
+        for delta_x in range(-nei_range, nei_range + 1):
+            for delta_y in range(-nei_range, nei_range + 1):
+                nei = [point[0] + delta_x, point[1] + delta_y]
+                depth = depth_image[nei[1], nei[0]]
+
+                if depth != 0:
+                    break
+
+            if depth != 0:
+                break
+
+        nei_range += 1
 
     pxl = np.linalg.inv(cameraMatrix).dot(
         np.array([pixel[0] * depth, pixel[1] * depth, depth]))
@@ -120,48 +133,91 @@ def project_3d_2d(point, M_CL):
 
     return pxl[:2]
 
-def depth_process(depth_image):
-    depth_image[depth_image > 1887] = 1887
-    depth_image = (depth_image - 493) * 254 / (1887 - 493)
-    depth_image[depth_image < 0] = 0
-
-    return depth_image
-
-def compute_collision_score(p1, p2, depth_map, center_height, M_CL):
+def compute_collision_score(p1, p2, rot_max, center, depth_map, center_height, M_CL):
     count = 0
     score = 0
     for i in range(int(p1[0]), int(p2[0])+1):
         for j in range(int(p1[1]), int(p2[1])+1):
             count += 1
+
+            # apply rotation
             p = [i, j]
+            p -= center
+            p = rot_max.dot([p[0], p[1], 1])[:2]
+            p += center
+
+            test_img = cv2.circle(test_img, (int(p[0]), int(p[1])), 2, (0, 0, 0), 2)
+
             p_3d = project_2d_3d(p, depth_map, M_CL)
             score += np.heaviside(center_height - p_3d[2], 1)
 
+    cv2.imshow('debug', test_img)
+    cv2.waitKey(0)
+
     return count, score
 
-def compute_occupancy_score(p1, p2, depth_map, M_CL):
+def compute_occupancy_score(p1, p2, rot_max, center, depth_map, M_CL, test_img):
     count = 0
     score = 0
     for i in range(int(p1[0]), int(p2[0]) + 1):
         for j in range(int(p1[1]), int(p2[1]) + 1):
             count += 1
+
+            # apply rotation
             p = [i, j]
+            p -= center
+            p = rot_max.dot([p[0], p[1], 1])[:2]
+            p += center
+
+            test_img = cv2.circle(test_img, (int(p[0]), int(p[1])), 2, (0, 0, 0), 2)
+
             p_3d = project_2d_3d(p, depth_map, M_CL)
             score += np.heaviside(p_3d[2] - z_table)
+
+    cv2.imshow('debug', test_img)
+    cv2.waitKey(0)
 
     score /= count
     return score
 
+# def compute_collision_score(p1, p2, depth_map, center_height, M_CL):
+#     count = 0
+#     score = 0
+#     for i in range(int(p1[0]), int(p2[0])+1):
+#         for j in range(int(p1[1]), int(p2[1])+1):
+#             count += 1
+#             p = [i, j]
+#             p_3d = project_2d_3d(p, depth_map, M_CL)
+#             score += np.heaviside(center_height - p_3d[2], 1)
+#
+#     return count, score
+#
+# def compute_occupancy_score(p1, p2, depth_map, M_CL):
+#     count = 0
+#     score = 0
+#     for i in range(int(p1[0]), int(p2[0]) + 1):
+#         for j in range(int(p1[1]), int(p2[1]) + 1):
+#             count += 1
+#             p = [i, j]
+#             p_3d = project_2d_3d(p, depth_map, M_CL)
+#             score += np.heaviside(p_3d[2] - z_table)
+#
+#     score /= count
+#     return score
+
 def compute_grasp_height(center_height):
     return np.abs(center_height - z_table) / np.abs(z_table)
 
-def scoring(results, depth_map, M_CL):
+def scoring(results, rgb_img, depth_map, M_CL):
     res = []
     for result in results:
         # pixel location over the RGB image
-        kp_lm_r = np.array([int(result[0]), int(result[1])])
-        kp_rm_r = np.array([int(result[2]), int(result[3])])
+        f_w, f_h = 640. / 512., 480. / 512.
+        kp_lm_r = np.array([int(result[0] * f_w), int(result[1] * f_h)])
+        kp_rm_r = np.array([int(result[2] * f_w), int(result[3] * f_h)])
         center = np.array([int((kp_lm_r[0] + kp_rm_r[0]) / 2), int((kp_lm_r[1] + kp_rm_r[1]) / 2)])
+        orientation_2d = np.arctan2(kp_rm_r[1] - kp_lm_r[1], kp_rm_r[0] - kp_lm_r[0])
+        rot_2d = np.array([[np.cos(orientation_2d), np.sin(orientation_2d), 0], [-np.sin(orientation_2d), np.cos(orientation_2d), 0], [0, 0, 1]])
 
         # project to the 3d location in the real world
         kp_lm_r_3d = project_2d_3d(kp_lm_r, depth_map, M_CL)
@@ -176,8 +232,14 @@ def scoring(results, depth_map, M_CL):
                             [0, 0, 0, 1]])
 
         # rotate the grasp bbx to horizontal one
-        kp_lm_3d = np.linalg.inv(rot_max).dot(kp_lm_r_3d - center_3d) + center_3d
-        kp_rm_3d = np.linalg.inv(rot_max).dot(kp_rm_r_3d - center_3d) + center_3d
+        kp_lm_3d = kp_lm_r_3d - center_3d
+        kp_lm_3d[-1] = 1
+        kp_rm_3d = kp_rm_r_3d - center_3d
+        kp_rm_3d[-1] = 1
+        kp_lm_3d = np.linalg.inv(rot_max).dot(kp_lm_3d) + center_3d
+        kp_rm_3d = np.linalg.inv(rot_max).dot(kp_rm_3d) + center_3d
+        kp_lm_3d[-1] = 1
+        kp_rm_3d[-1] = 1
 
         # compute the two corner points (left-top and right-bottom with respect to the image) for collision bbx
         l_lt_3d = [kp_lm_3d[0] + grip_bbx_h/2, kp_lm_3d[1] + grip_bbx_w/2, kp_lm_3d[2], 1]
@@ -185,21 +247,33 @@ def scoring(results, depth_map, M_CL):
         r_lt_3d = [kp_rm_3d[0] + grip_bbx_h / 2, kp_rm_3d[1] + grip_bbx_w / 2, kp_rm_3d[2], 1]
         r_rb_3d = [kp_rm_3d[0] - grip_bbx_h / 2, kp_rm_3d[1] - grip_bbx_w / 2, kp_rm_3d[2], 1]
 
+        l_lt = project_3d_2d(l_lt_3d, M_CL)
+        l_rb = project_3d_2d(l_rb_3d, M_CL)
+        r_lt = project_3d_2d(r_lt_3d, M_CL)
+        r_rb = project_3d_2d(r_rb_3d, M_CL)
+
         # rotate
-        l_lt_r_3d = orientation.dot(l_lt_3d)
-        l_rb_r_3d = orientation.dot(l_rb_3d)
-        r_lt_r_3d = orientation.dot(r_lt_3d)
-        r_rb_r_3d = orientation.dot(r_rb_3d)
+        # l_lt_r_3d = rot_max.dot(l_lt_3d)
+        # l_rb_r_3d = rot_max.dot(l_rb_3d)
+        # r_lt_r_3d = rot_max.dot(r_lt_3d)
+        # r_rb_r_3d = rot_max.dot(r_rb_3d)
 
         # project to 2D pixels
-        l_lt = project_3d_2d(l_lt_r_3d, M_CL)
-        l_rb = project_3d_2d(l_rb_r_3d, M_CL)
-        r_lt = project_3d_2d(r_lt_r_3d, M_CL)
-        r_rb = project_3d_2d(r_rb_r_3d, M_CL)
+        # l_lt = project_3d_2d(l_lt_r_3d, M_CL)
+        # l_rb = project_3d_2d(l_rb_r_3d, M_CL)
+        # r_lt = project_3d_2d(r_lt_r_3d, M_CL)
+        # r_rb = project_3d_2d(r_rb_r_3d, M_CL)
+
+        # for the purpose of debugging
+        test_img = rgb_img.copy()
+        test_img = cv2.circle(test_img, (int(kp_lm_r[0]), int(kp_lm_r[1])), 2, (0, 0, 255), 2)
+        test_img = cv2.circle(test_img, (int(kp_rm_r[0]), int(kp_rm_r[1])), 2, (0, 0, 255), 2)
 
         # compute collision score
-        l_pxl_cnt, l_score = compute_collision_score(l_lt, l_rb, depth_map, center_3d[2], M_CL)
-        r_pxl_cnt, r_score = compute_collision_score(r_lt, r_rb, depth_map, center_3d[2], M_CL)
+        l_pxl_cnt, l_score = compute_collision_score(l_lt, l_rb, rot_2d, center, depth_map, center_3d[2], M_CL, test_img)
+        r_pxl_cnt, r_score = compute_collision_score(r_lt, r_rb, rot_2d, center, depth_map, center_3d[2], M_CL, test_img)
+        # l_pxl_cnt, l_score = compute_collision_score(l_lt, l_rb, depth_map, center_3d[2], M_CL)
+        # r_pxl_cnt, r_score = compute_collision_score(r_lt, r_rb, depth_map, center_3d[2], M_CL)
         c_s = (l_score + r_score) / (l_pxl_cnt + r_pxl_cnt)
 
         # compute the corner points (top-left and bottom-right) of the occupant bbx
@@ -240,8 +314,8 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, visualize=True):
         for pred in preds:
             kps_pr.append(pred[:4])
 
-    grasps = scoring(kps_pr, depth_map, M_CL)
-    grasps = sorted(grasps, key=lambda x:x[-1])
+    grasps = scoring(kps_pr, rgb_img, depth_map, M_CL)
+    grasps = sorted(grasps, key=lambda x:x[-1], reverse=True)
 
     grasp = grasps[0]
 
@@ -254,6 +328,15 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, visualize=True):
         k = cv2.waitKey(1)
 
     return grasp[:4]
+
+def pre_process(rgb_img, depth_img):
+    inp_image = rgb_img.copy()
+    inp_image[:, :, 0] = depth_img
+
+    inp_image = cv2.resize(inp_image, (512, 512))
+    inp_image = inp_image[:, :, ::-1]
+
+    return inp_image
 
 def isPickbinClear(M_CL, depth_map):
     p_tl = project_3d_2d(pb_tl, M_CL)
@@ -269,7 +352,7 @@ def isPickbinClear(M_CL, depth_map):
             max_z = max(max_z, p_3d[2])
 
     # consider it is cleared if the difference between object heights is less than 5mm
-    return (max_z-min_z) < 0.005
+    return (max_z-min_z) < 0.01
 
 def run(opt, pipeline, align, depth_scale, pub_res, pub_end):
     Dataset = dataset_factory[opt.dataset]
@@ -304,14 +387,8 @@ def run(opt, pipeline, align, depth_scale, pub_res, pub_end):
         else:
             pub_end.publish(False)
 
-        inp_image = img.copy()
-        depth_processed = depth.copy()
-
-        # convert raw depth to 0-255
-        depth_processed = depth_process(depth_processed)
-
-        # replace blue channel with the depth channel
-        inp_image[:, :, 2] = depth_processed
+        # pre-process rgb and depth images
+        inp_image = pre_process(img, depth)
 
         # pass the image into the network
         ret = detector.run(inp_image)
@@ -345,7 +422,7 @@ if __name__ == '__main__':
     align = rs.align(align_to)
 
     # initialize ros node
-    rospy.init_node("Grasp experiment")
+    rospy.init_node("Bin_picking")
     # Publisher of perception result
     pub_res = rospy.Publisher('/result', Float64MultiArray, queue_size=10)
     pub_end = rospy.Publisher('/clear', Bool, queue_size=10)
