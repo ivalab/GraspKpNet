@@ -10,6 +10,7 @@ import cv2
 import cv2.aruco as aruco
 import numpy as np
 import pyrealsense2 as rs
+import sys
 
 import rospy
 from std_msgs.msg import Bool
@@ -23,6 +24,7 @@ from logger import Logger
 from utils.utils import AverageMeter
 from datasets.dataset_factory import dataset_factory
 from detectors.detector_factory import detector_factory
+
 # transformation from the robot base to aruco tag
 M_BL = np.array([[1., 0., 0.,  0.30000],
                  [0., 1., 0.,  0.32000],
@@ -71,6 +73,8 @@ def get_M_CL_info(gray, image_init, visualize=False):
     return M_CL, corners_CL[0][0, :, :]
 
 def aruco_tag_remove(rgb_image, corners):
+    img_out = rgb_image.copy()
+
     # find the top-left and right-bottom corners
     min = sys.maxsize
     max = -sys.maxsize
@@ -86,13 +90,13 @@ def aruco_tag_remove(rgb_image, corners):
             br_pxl = [int(corner[0]), int(corner[1])]
 
     # get the replacement pixel value
-    rep_color = rgb_image[tl_pxl[0]-10, tl_pxl[1]-10, :]
+    rep_color = img_out[tl_pxl[0]-10, tl_pxl[1]-10, :]
 
     for h in range(tl_pxl[1]-45, br_pxl[1]+46):
         for w in range(tl_pxl[0]-45, br_pxl[0]+46):
-            rgb_image[h, w, :] = rep_color
+            img_out[h, w, :] = rep_color
 
-    return rgb_image
+    return img_out
 
 def project(pixel, depth_image, M_CL, M_BL, cameraMatrix):
     '''
@@ -106,10 +110,23 @@ def project(pixel, depth_image, M_CL, M_BL, cameraMatrix):
      q_B: 3d coordinate of pixel with respect to base frame
      '''
     depth = depth_image[pixel[1], pixel[0]]
-    moving_pixel = [pixel[0], pixel[1]]
+
+    # if the depth of the detected pixel is 0, check the depth of its neighbors
+    # by counter-clock wise
+    nei_range = 1
     while depth == 0:
-        moving_pixel = [moving_pixel[0], moving_pixel[1]+1]
-        depth = depth_image[moving_pixel[1], moving_pixel[0]]
+        for delta_x in range(-nei_range, nei_range+1):
+            for delta_y in range(-nei_range, nei_range+1):
+                nei = [point[0] + delta_x, point[1] + delta_y]
+                depth = depth_image[nei[1], nei[0]]
+
+                if depth != 0:
+                    break
+
+            if depth != 0:
+                break
+
+        nei_range += 1
 
     pxl = np.linalg.inv(cameraMatrix).dot(
         np.array([pixel[0] * depth, pixel[1] * depth, depth]))
@@ -120,12 +137,18 @@ def project(pixel, depth_image, M_CL, M_BL, cameraMatrix):
     return q_B
 
 def pre_process(rgb_img, depth_img):
-    inp_image = rgb_img
+    inp_image = rgb_img.copy()
     inp_image[:, :, 0] = depth_img
 
-    inp_image = cv2.resize(inp_image, (256, 256))
+    inp_image = cv2.resize(inp_image, (512, 512))
+    inp_image = inp_image[:, :, ::-1]
 
     return inp_image
+
+def isWithinRange(pxl, w, h):
+    x, y = pxl[:]
+
+    return w/12. <= x <= 11*w/12 and h/12. <= y <= 11*h/12
 
 def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, M_BL, cameraMatrix, visualize=True):
     kps_pr = []
@@ -138,20 +161,36 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, M_BL, cameraMatrix, vis
             score = pred[-1]
             kps_pr.append([kps[0], kps[1], kps[2], kps[3], score])
 
+    # no detection
+    if len(kps_pr) == 0:
+        return [0, 0, 0, 0]
+
     # sort by the confidence score
     kps_pr = sorted(kps_pr, key=lambda x: x[-1], reverse=True)
-    # select the top 1
-    kp_pr = kps_pr[0]
+    # select the top 1 grasp prediction within the workspace
+    res = None
+    for kp_pr in kps_pr:
+        f_w, f_h = 640. / 512., 480. / 512.
+        kp_lm = (int(kp_pr[0] * f_w), int(kp_pr[1] * f_h))
+        kp_rm = (int(kp_pr[2] * f_w), int(kp_pr[3] * f_h))
 
-    f_w, f_h = 640./256., 480./256.
-    kp_lm = [int(kp_pr[0]*f_w), int(kp_pr[1]*f_h)]
-    kp_rm = [int(kp_pr[2]*f_w), int(kp_pr[3]*f_h)]
+        if isWithinRange(kp_lm, 640, 480) and isWithinRange(kp_rm, 640, 480):
+            res = kp_pr
+            break
+
+    if res is None:
+        return [0, 0, 0, 0]
+
+    f_w, f_h = 640./512., 480./512.
+    kp_lm = (int(res[0]*f_w), int(res[1]*f_h))
+    kp_rm = (int(res[2]*f_w), int(res[3]*f_h))
+    center = (int((kp_lm[0]+kp_rm[0])/2), int((kp_lm[1]+kp_rm[1])/2))
+
     kp_lm_3d = project(kp_lm, depth_map, M_CL, M_BL, cameraMatrix)
     kp_rm_3d = project(kp_rm, depth_map, M_CL, M_BL, cameraMatrix)
-    center = [int((kp_lm[0]+kp_rm[0])/2), int((kp_lm[1]+kp_rm[1])/2)]
     center_3d = project(center, depth_map, M_CL, M_BL, cameraMatrix)
 
-    orientation = np.arctan2(kp_rm_3d[1] - kp_lm_3d[1], p_4_3d[0] - kp_lm_3d[0])
+    orientation = np.arctan2(kp_rm_3d[1] - kp_lm_3d[1], kp_rm_3d[0] - kp_lm_3d[0])
     # motor 7 is clockwise
     if orientation > np.pi / 2:
         orientation = np.pi - orientation
@@ -160,17 +199,23 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, M_BL, cameraMatrix, vis
     else:
         orientation = -orientation
 
-    if visualize:
-        rgb_img = cv2.circle(rgb_img, (int(kp_lm[0]), int(kp_lm[1])), 2, (0, 0, 255), 3)
-        rgb_img = cv2.circle(rgb_img, (int(kp_rm[0]), int(kp_rm[1])), 2, (0, 0, 255), 3)
+    # draw arrow for left-middle and right-middle key-points
+    lm_ep = (int(kp_lm[0] + (kp_rm[0] - kp_lm[0]) / 5.), int(kp_lm[1] + (kp_rm[1] - kp_lm[1]) / 5.))
+    rm_ep = (int(kp_rm[0] + (kp_lm[0] - kp_rm[0]) / 5.), int(kp_rm[1] + (kp_lm[1] - kp_rm[1]) / 5.))
+    rgb_img = cv2.arrowedLine(rgb_img, kp_lm, lm_ep, (0, 0, 0), 2)
+    rgb_img = cv2.arrowedLine(rgb_img, kp_rm, rm_ep, (0, 0, 0), 2)
+    # draw left-middle, right-middle and center key-points
+    rgb_img = cv2.circle(rgb_img, (int(kp_lm[0]), int(kp_lm[1])), 2, (0, 0, 255), 2)
+    rgb_img = cv2.circle(rgb_img, (int(kp_rm[0]), int(kp_rm[1])), 2, (0, 0, 255), 2)
+    rgb_img = cv2.circle(rgb_img, (int(center[0]), int(center[1])), 2, (0, 0, 255), 2)
 
+    if visualize:
         cv2.namedWindow('visual', cv2.WINDOW_AUTOSIZE)
         cv2.imshow('visual', rgb_img)
-        cv2.waitKey(1)
 
     return [center_3d[0], center_3d[1], center_3d[2], orientation]
 
-def run(opt, pipeline, align, depth_scale, pub_res):
+def run(opt, pipeline, align, depth_scale, video_saver, pub_res):
     Dataset = dataset_factory[opt.dataset]
     opt = opts().update_dataset_info_and_set_heads(opt, Dataset)
     print(opt)
@@ -198,19 +243,27 @@ def run(opt, pipeline, align, depth_scale, pub_res):
 
         # remove aruco tag from input image to avoid mis-detection
         if corners is not None:
-            img = aruco_tag_remove(img, corners)
+            img_wo_at = aruco_tag_remove(img, corners)
 
         # pre-process rgb and depth images
-        inp_image = pre_process(img, depth)
+        inp_image = pre_process(img_wo_at, depth)
 
         # pass the image into the network
         ret = detector.run(inp_image)
         ret = ret["results"]
 
-        loc_ori = KpsToGrasppose(ret, img, depth_raw, M_CL, M_BL, cameraMatrix)
+        loc_ori = KpsToGrasppose(ret, img, depth_raw, M_CL, M_BL, cameraMatrix, video_saver)
 
-        pub_res.publish(loc_ori)
+        msg = Float64MultiArray()
+        msg.data = loc_ori
+        pub_res.publish(msg)
 
+        k = cv2.waitKey(1)
+        if k == ord('s'):
+            break
+
+    video_saver.release()
+    cv2.destroyAllWindows()
     # Stop streaming
     pipeline.stop()
 
