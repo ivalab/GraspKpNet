@@ -109,7 +109,7 @@ To run physical experiments with GKNet and ROS, please follow the instructions p
 This section collects results of some experiments or discussions which aren't documented in the manuscript due to the lack of enough scientific values.
 
 ### Keypoint representation
-This [readme]() file documents some examples with visualiztions for Top-left, bottom-left and bottom-right (TlBlBr) grasp keypoint representation. These
+This [readme](https://github.com/ivalab/GraspKpNet/blob/main/readme/kp_rep.md) file documents some examples with visualiztions for Top-left, bottom-left and bottom-right (TlBlBr) grasp keypoint representation. These
 examples help clarify the effectiveness of grasp keypoint representation of less number of keypoints.
 
 ### Tuning hyper-parameters of alpha, beta and gamma.
