@@ -106,7 +106,12 @@ If you are interested in training GKNet on a new or customized dataset, please r
 To run physical experiments with GKNet and ROS, please follow the instructions provided in [Experiment.md](https://github.com/ivalab/GraspKpNet/blob/master/readme/experiment.md).
 
 ## Appendix
-This section collects results of some experiments which aren't documented in the manuscript due to the lack of enough scientific values.
+This section collects results of some experiments or discussions which aren't documented in the manuscript due to the lack of enough scientific values.
+
+### Keypoint representation
+This [readme]() file documents some examples with visualiztions for Top-left, bottom-left and bottom-right (TlBlBr) grasp keypoint representation. These
+examples help clarify the effectiveness of grasp keypoint representation of less number of keypoints.
+
 ### Tuning hyper-parameters of alpha, beta and gamma.
 The result is recorded in [tune_hp.md](https://github.com/ivalab/GraspKpNet/blob/main/readme/tune_kp.md) 
 
