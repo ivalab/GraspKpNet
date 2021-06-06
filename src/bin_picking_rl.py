@@ -55,15 +55,14 @@ grip_bbx_h = 0.03
 z_table = -0.045
 
 # top-left of the pick bin
-pb_tl = []
+pb_tl = [120, 40]
 # bottom-right of the pick bin
-pb_br = []
+pb_br = [600, 380]
 
 def get_M_CL(gray, image_init, visualize=False):
     # parameters
-    markerLength_CL = 0.076
-    # aruco_dict_CL = aruco.Dictionary_get(aruco.DICT_5X5_250)
-    aruco_dict_CL = aruco.Dictionary_get(aruco.DICT_6X6_250)
+    markerLength_CL = 0.093
+    aruco_dict_CL = aruco.Dictionary_get(aruco.DICT_ARUCO_ORIGINAL)
     parameters = aruco.DetectorParameters_create()
 
     corners_CL, ids_CL, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict_CL, parameters=parameters)
@@ -212,9 +211,9 @@ def scoring(results, rgb_img, depth_map, M_CL):
     res = []
     for result in results:
         # pixel location over the RGB image
-        f_w, f_h = 640. / 512., 480. / 512.
-        kp_lm_r = np.array([int(result[0] * f_w), int(result[1] * f_h)])
-        kp_rm_r = np.array([int(result[2] * f_w), int(result[3] * f_h)])
+        f_w, f_h = (pb_br[0] - pb_tl[0]) / 512., (pb_br[1] - pb_tl[1]) / 512.
+        kp_lm_r = np.array([int(result[0] * f_w) + pb_tl[0], int(result[1] * f_h) + pb_tl[1]])
+        kp_rm_r = np.array([int(result[2] * f_w) + pb_tl[0], int(result[3] * f_h) + pb_tl[1]])
         center = np.array([int((kp_lm_r[0] + kp_rm_r[0]) / 2), int((kp_lm_r[1] + kp_rm_r[1]) / 2)])
         orientation_2d = np.arctan2(kp_rm_r[1] - kp_lm_r[1], kp_rm_r[0] - kp_lm_r[0])
         rot_2d = np.array([[np.cos(orientation_2d), np.sin(orientation_2d), 0], [-np.sin(orientation_2d), np.cos(orientation_2d), 0], [0, 0, 1]])
@@ -300,7 +299,10 @@ def scoring(results, rgb_img, depth_map, M_CL):
         else:
             orientation = -orientation
 
-        res.append([center_3d[0], center_3d[1], center_3d[2], orientation,
+        # compute the open width
+        dist = np.linalg.norm(kp_lm_3d[:2] - kp_rm_3d[:2])
+
+        res.append([center_3d[0], center_3d[1], center_3d[2], orientation, dist,
                     kp_lm_r[0], kp_lm_r[1], kp_rm_r[0], kp_rm_r[1], c_s+o_s+h_s])
 
     return res
@@ -315,24 +317,26 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, visualize=True):
             kps_pr.append(pred[:4])
 
     grasps = scoring(kps_pr, rgb_img, depth_map, M_CL)
-    grasps = sorted(grasps, key=lambda x:x[-1], reverse=True)
+    grasps = sorted(grasps, key=lambda x: x[-1], reverse=True)
 
     grasp = grasps[0]
 
     if visualize:
-        rgb_img = cv2.circle(rgb_img, (int(grasp[4]), int(grasp[5])), 2, (0, 0, 255), 3)
-        rgb_img = cv2.circle(rgb_img, (int(grasp[6]), int(grasp[7])), 2, (0, 0, 255), 3)
+        rgb_img = cv2.circle(rgb_img, (int(grasp[5]), int(grasp[6])), 2, (0, 0, 255), 3)
+        rgb_img = cv2.circle(rgb_img, (int(grasp[7]), int(grasp[8])), 2, (0, 0, 255), 3)
 
         cv2.namedWindow('visual', cv2.WINDOW_AUTOSIZE)
         cv2.imshow('visual', rgb_img)
         k = cv2.waitKey(1)
 
-    return grasp[:4]
+    return grasp[:5]
 
 def pre_process(rgb_img, depth_img):
     inp_image = rgb_img.copy()
     inp_image[:, :, 0] = depth_img
 
+    # crop the region of the picking bin
+    inp_image = inp_image[pb_tl[1]:pb_br[1], pb_tl[0]:pb_br[0], :]
     inp_image = cv2.resize(inp_image, (512, 512))
     inp_image = inp_image[:, :, ::-1]
 
@@ -394,9 +398,9 @@ def run(opt, pipeline, align, depth_scale, pub_res, pub_end):
         ret = detector.run(inp_image)
         ret = ret["results"]
 
-        loc_ori = KpsToGrasppose(ret, img, depth_raw, M_CL)
+        pose = KpsToGrasppose(ret, img, depth_raw, M_CL)
 
-        pub_res.publish(loc_ori)
+        pub_res.publish(pose)
 
     # Stop streaming
     pipeline.stop()

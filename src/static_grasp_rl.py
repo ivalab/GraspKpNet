@@ -115,9 +115,9 @@ def project(pixel, depth_image, M_CL, M_BL, cameraMatrix):
     # by counter-clock wise
     nei_range = 1
     while depth == 0:
-        for delta_x in range(-nei_range, nei_range+1):
-            for delta_y in range(-nei_range, nei_range+1):
-                nei = [point[0] + delta_x, point[1] + delta_y]
+        for delta_x in range(-nei_range, nei_range + 1):
+            for delta_y in range(-nei_range, nei_range + 1):
+                nei = [pixel[0] + delta_x, pixel[1] + delta_y]
                 depth = depth_image[nei[1], nei[0]]
 
                 if depth != 0:
@@ -199,6 +199,9 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, M_BL, cameraMatrix, vis
     else:
         orientation = -orientation
 
+    # compute the open width
+    dist = np.linalg.norm(kp_lm_3d[:2] - kp_rm_3d[:2])
+
     # draw arrow for left-middle and right-middle key-points
     lm_ep = (int(kp_lm[0] + (kp_rm[0] - kp_lm[0]) / 5.), int(kp_lm[1] + (kp_rm[1] - kp_lm[1]) / 5.))
     rm_ep = (int(kp_rm[0] + (kp_lm[0] - kp_rm[0]) / 5.), int(kp_rm[1] + (kp_lm[1] - kp_rm[1]) / 5.))
@@ -213,7 +216,7 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, M_BL, cameraMatrix, vis
         cv2.namedWindow('visual', cv2.WINDOW_AUTOSIZE)
         cv2.imshow('visual', rgb_img)
 
-    return [center_3d[0], center_3d[1], center_3d[2], orientation]
+    return [center_3d[0], center_3d[1], center_3d[2], orientation, dist]
 
 def run(opt, pipeline, align, depth_scale, video_saver, pub_res):
     Dataset = dataset_factory[opt.dataset]

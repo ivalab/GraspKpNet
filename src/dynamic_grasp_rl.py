@@ -119,7 +119,7 @@ def project(pixel, depth_image, M_CL, M_BL, cameraMatrix):
     while depth == 0:
         for delta_x in range(-nei_range, nei_range+1):
             for delta_y in range(-nei_range, nei_range+1):
-                nei = [point[0] + delta_x, point[1] + delta_y]
+                nei = [pixel[0] + delta_x, pixel[1] + delta_y]
                 depth = depth_image[nei[1], nei[0]]
 
                 if depth != 0:
@@ -201,7 +201,7 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, prev_pose, M_CL, M_BL, camera
     kp_lm_3d = project(kp_lm, depth_map, M_CL, M_BL, cameraMatrix)
     kp_rm_3d = project(kp_rm, depth_map, M_CL, M_BL, cameraMatrix)
 
-    orientation = np.arctan2(kp_rm_3d[1] - kp_lm_3d[1], p_4_3d[0] - kp_lm_3d[0])
+    orientation = np.arctan2(kp_rm_3d[1] - kp_lm_3d[1], kp_rm_3d[0] - kp_lm_3d[0])
     # motor 7 is clockwise
     if orientation > np.pi / 2:
         orientation = np.pi - orientation
@@ -209,6 +209,9 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, prev_pose, M_CL, M_BL, camera
         orientation = -np.pi - orientation
     else:
         orientation = -orientation
+
+    # compute the open width
+    dist = np.linalg.norm(kp_lm_3d[:2] - kp_rm_3d[:2])
 
     if visualize:
         rgb_img = cv2.circle(rgb_img, (int(kp_lm[0]), int(kp_lm[1])), 2, (0, 0, 255), 3)
@@ -218,7 +221,7 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, prev_pose, M_CL, M_BL, camera
         cv2.imshow('visual', rgb_img)
         cv2.waitKey(1)
 
-    return [center_3d[0], center_3d[1], center_3d[2], orientation]
+    return [center_3d[0], center_3d[1], center_3d[2], orientation, dist]
 
 def run(opt, pipeline, align, depth_scale, pub_res):
     Dataset = dataset_factory[opt.dataset]
@@ -286,7 +289,7 @@ if __name__ == '__main__':
     align = rs.align(align_to)
 
     # initialize ros node
-    rospy.init_node("Static_grasping")
+    rospy.init_node("Dynamic_grasping")
     # Publisher of perception result
     pub_res = rospy.Publisher('/result', Float64MultiArray, queue_size=10)
 

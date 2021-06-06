@@ -58,6 +58,8 @@ detector = Detector(opt)
 # Publisher of perception result
 pub_res = rospy.Publisher('/result', Float64MultiArray, queue_size=10)
 
+prev_detection = None
+
 def get_M_CL_info(gray, image_init, visualize=False):
     # parameters
     markerLength_CL = 0.093
@@ -123,23 +125,10 @@ def project(pixel, depth_image, M_CL, M_BL, cameraMatrix):
      q_B: 3d coordinate of pixel with respect to base frame
      '''
     depth = depth_image[pixel[1], pixel[0]]
-
-    # if the depth of the detected pixel is 0, check the depth of its neighbors
-    # by counter-clock wise
-    nei_range = 1
+    moving_pixel = [pixel[0], pixel[1]]
     while depth == 0:
-        for delta_x in range(-nei_range, nei_range + 1):
-            for delta_y in range(-nei_range, nei_range + 1):
-                nei = [pixel[0] + delta_x, pixel[1] + delta_y]
-                depth = depth_image[nei[1], nei[0]]
-
-                if depth != 0:
-                    break
-
-            if depth != 0:
-                break
-
-        nei_range += 1
+        moving_pixel = [moving_pixel[0], moving_pixel[1]-1]
+        depth = depth_image[moving_pixel[1], moving_pixel[0]]
 
     pxl = np.linalg.inv(cameraMatrix).dot(
         np.array([pixel[0] * depth, pixel[1] * depth, depth]))
@@ -195,8 +184,12 @@ def kinect_rgbd_callback(rgb_data, depth_data):
         ret = detector.run(inp_image[:, :, :])
         ret = ret["results"]
 
-        loc_ori = KpsToGrasppose(ret, img, depth_raw, M_CL, M_BL, cameraMatrix)
-        pub_res.publish(loc_ori)
+        pose = KpsToGrasppose(ret, img, depth_raw, M_CL, M_BL, cameraMatrix)
+        pub_res.publish(pose)
+
+        nonlocal prev_detection
+        # update previous detection
+        prev_detection = pose
 
     except CvBridgeError as e:
         print(e)
@@ -225,17 +218,27 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, M_BL, cameraMatrix, vis
     kps_pr = sorted(kps_pr, key=lambda x: x[-1], reverse=True)
     # select the top 1 grasp prediction within the workspace
     res = None
-    for kp_pr in kps_pr:
-        f_w, f_h = 640. / 512., 480. / 512.
-        kp_lm = (int(kp_pr[0] * f_w), int(kp_pr[1] * f_h))
-        kp_rm = (int(kp_pr[2] * f_w), int(kp_pr[3] * f_h))
+    nonlocal prev_detection
+    # select the top 1 in the beginning of the task
+    if not prev_detection:
+        res = kps_pr[0]
+    # select the one closest to the previous predicted pose among top-5 predictions
+    else:
+        dist = sys.maxsize
+        for kp_pr in kps_pr[:5]:
+            f_w, f_h = 640. / 512., 480. / 512.
+            kp_lm = [int(kp_pr[0] * f_w), int(kp_pr[1] * f_h)]
+            kp_rm = [int(kp_pr[2] * f_w), int(kp_pr[3] * f_h)]
+            center = [int((kp_lm[0] + kp_rm[0]) / 2), int((kp_lm[1] + kp_rm[1]) / 2)]
 
-        if isWithinRange(kp_lm, 640, 480) and isWithinRange(kp_rm, 640, 480):
-            res = kp_pr
-            break
+            center_3d = project(center, depth_map, M_CL, M_BL, cameraMatrix)
+            tmp = np.linalg.norm(center_3d[:-1] - prev_detection[:3])
+            if tmp < dist and tmp < DIST_THRESHOLD:
+                dist = tmp
+                res = kp_pr
 
     if res is None:
-        return [0, 0, 0, 0]
+        res = prev_detection
 
     f_w, f_h = 640./512., 480./512.
     kp_lm = (int(res[0]*f_w), int(res[1]*f_h))
@@ -276,7 +279,7 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, M_BL, cameraMatrix, vis
 
 if __name__ == '__main__':
     # initialize ros node
-    rospy.init_node("Static_grasping")
+    rospy.init_node("Dynamic_grasping")
 
     # Bridge to convert ROS Image type to OpenCV Image type
     cv_bridge = CvBridge()
