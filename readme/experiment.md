@@ -13,7 +13,7 @@ Pytorch dropped their support of newer versions for Python 2.7, you might need t
 might consider install another cuda with older version. For installing multiple Cuda,  you can refer to this [tutorial](https://towardsdatascience.com/installing-multiple-cuda-cudnn-versions-in-ubuntu-fcb6aa5194e2).
 
 ### Static Grasping
-This script will run GKNet to provide grasp detections via camera Realsense. The grasp detection results will be published on the ROS topic for ROS-side scripts to subscribe. 
+This script will run GKNet to provide grasp detections via camera Realsense/Kinect. The grasp detection results will be published on the ROS topic for ROS-side scripts to subscribe. 
 
 ```
 python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 0.6 --ori_threshold 0.24 --center_threshold 0.10 --scores_threshold 0.15 --center_weight 1.0
@@ -21,15 +21,19 @@ python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_g
 ```
 
 ### Grasping at Varied Camera Angles
-This script will run GKNet to provide grasp detections via camera Realsense. The grasp detection results will be published on the ROS topic for ROS-side scripts to subscribe. 
+This script will run GKNet to provide grasp detections via camera Realsense/Kinect. The grasp detection results will be published on the ROS topic for ROS-side scripts to subscribe. 
 
 ```
-python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id static_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 0.6 --ori_threshold 0.24 --center_threshold 0.10 --scores_threshold 0.15 --center_weight 1.0
+python static_grasp_rl.py/static_ grasp_kt.py dbmctdet_cornell --exp_id grasp_varied_angle --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 0.6 --ori_threshold 0.24 --center_threshold 0.10 --scores_threshold 0.15 --center_weight 1.0
 
 ```
 
 ### Dynamic Grasping
+This script will run GKNet to provide continous grasp detection via camera Realsense/Kinect. The grasp detection results will be published on the ROS topic for ROS-side scripts to subscribe. 
+```
+python dynamic_grasp_rl.py/dynamic_ grasp_kt.py dbmctdet_cornell --exp_id dynamic_grasp --arch dla_34 --dataset cornell --fix_res --load_model ../models/model_dla34_cornell.pth --ae_threshold 0.6 --ori_threshold 0.24 --center_threshold 0.10 --scores_threshold 0.15 --center_weight 1.0
 
+```
 
 ### Bin Picking
 This script will run GKNet to provide grasp detections via camera Realsense. The grasp detection results will be published on the ROS topic for ROS-side scripts to subscribe. 
