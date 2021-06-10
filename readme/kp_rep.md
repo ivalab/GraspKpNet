@@ -1,5 +1,5 @@
 We argue in the manuscript that removing redundant keypoints is important for grasp keypoint detection. In this Readme file, we will provide some extra
-examples with visualization to help readers further understand its importance.
+examples with visualization to help readers further understand the efficiency of the proposed representation.
 
 
 Let's take the representation of Top-left, Bottom-left and Bottom-right (TlBlBr) for example. First of all, no matter what kind of keypoint representation,
