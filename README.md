@@ -119,7 +119,7 @@ The result is recorded in [tune_hp.md](https://github.com/ivalab/GraspKpNet/blob
 The demo video of all physical experiments are uploaded on the [Youtube](https://www.youtube.com/watch?v=Q8-Kr8Q9vC0). Please watch it if you are interested.
 
 ### Detailed result for bin picking experiment
-For the purpose of saving space, results for each trial of bin picking experiment are moved to this [readme]() file. 
+For the purpose of saving space, results for each trial of bin picking experiment are moved to this [readme](https://github.com/ivalab/GraspKpNet/blob/main/readme/bin_picking.md) file. 
 
 ## License
 GKNet is released under the MIT License (refer to the LICENSE file for details).
