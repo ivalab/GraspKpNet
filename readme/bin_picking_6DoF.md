@@ -2,7 +2,7 @@
 
 | Method | #Total | #Placed | #Trials | Results | SR  | PC  | TC |
 | :----- | :----: | :-----: | :-----: | :------ | :-: | :-: | :-: |
-| CollisionNet | 51 | 4-9 | 9 | 41/51 | N/A | 1T |
+| CollisionNet | 51 | 4-9 | 9 | 41/51 | 80.4% | N/A | 1T |
 |
 
 Legend: Termination Condition (TC)
