@@ -1,4 +1,4 @@
-### Clutter Clearance or bin-Picking Outcomes for 6-DOF Grasping Nethods
+### Clutter Clearance or Bin-Picking Outcomes for 6-DOF Grasping Nethods
 
 | Method | #Total | #Placed | #Trials | Results | SR  | PC  | TC |
 | :----- | :----: | :-----: | :-----: | :------ | :-: | :-: | :-: |
