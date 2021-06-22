@@ -121,6 +121,10 @@ The demo video of all physical experiments are uploaded on the [Youtube](https:/
 ### Detailed result for bin picking experiment
 For the purpose of saving space, results for each trial of bin picking experiment are moved to this [readme](https://github.com/ivalab/GraspKpNet/blob/main/readme/bin_picking.md) file. 
 
+### Implementation of GGCNN
+Considering that GGCNN didn't provide the result of training and testing on the Cornell Dataset, we implemented their work based on their public
+repository. The modified version is provided [here](https://github.com/ivalab/ggcnn).
+
 ## License
 GKNet is released under the MIT License (refer to the LICENSE file for details).
 Portions of the code are borrowed from [CenterNet](https://github.com/xingyizhou/CenterNet), [dla](https://github.com/ucbdrive/dla) (DLA network), [DCNv2](https://github.com/CharlesShang/DCNv2)(deformable convolutions). Please refer to the original License of these projects (See [Notice](https://github.com/ivalab/GKNet/blob/master/NOTICE)).
