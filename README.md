@@ -118,8 +118,10 @@ The result is recorded in [tune_hp.md](https://github.com/ivalab/GraspKpNet/blob
 ### Demo video
 The demo video of all physical experiments are uploaded on the [Youtube](https://www.youtube.com/watch?v=Q8-Kr8Q9vC0). Please watch it if you are interested.
 
-### Detailed result for bin picking experiment
-For the purpose of saving space, results for each trial of bin picking experiment are moved to this [readme](https://github.com/ivalab/GraspKpNet/blob/main/readme/bin_picking.md) file. 
+### Detailed Result and Tables 
+Some of the source data was summarized with the raw source data not provided.  The links below provide access to the source material:
+- [Trial results of bin picking](https://github.com/ivalab/GraspKpNet/blob/main/readme/bin_picking.md) experiment.
+- [6-DoF summary results](https://github.com/ivalab/GraspKpNet/blob/main/readme/bin_picking.md) for clutter clearance or bin-picking tasks.
 
 ### Implementation of GGCNN
 Considering that GGCNN didn't provide the result of training and testing on the Cornell Dataset, we implemented their work based on their public
