@@ -18,7 +18,7 @@ Grasp Keypoint Network for Grasp Candidates Detection
 - [Usage](#Usage)
 - [Develop](#Develop)
 - [Physical Experiments](#Physical-Experiments)
-- [Appendix](#Appendix)
+- [Supplemental Material](#Supplemental-Material)
 
 ## Abstract
 Contemporary grasp detection approaches employ deep learning to achieve robustness to sensor and object model
@@ -105,7 +105,7 @@ If you are interested in training GKNet on a new or customized dataset, please r
 ## Physical Experiments
 To run physical experiments with GKNet and ROS, please follow the instructions provided in [Experiment.md](https://github.com/ivalab/GraspKpNet/blob/master/readme/experiment.md).
 
-## Appendix
+## Supplemental Material
 This section collects results of some experiments or discussions which aren't documented in the manuscript due to the lack of enough scientific values.
 
 ### Keypoint representation
