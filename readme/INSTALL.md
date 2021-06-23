@@ -1,7 +1,7 @@
 # Installation
 
 
-The code was tested on Ubuntu 16.04, with [Anaconda](https://www.anaconda.com/download) Python 3.6 and [PyTorch]((http://pytorch.org/)) v0.4.1. NVIDIA GPUs are needed for both training and testing. The PyTorch v1.0.1 is also supported. The installation instruction can be followed by this [Issue](https://github.com/xingyizhou/CenterNet/issues/7). The key difference comes from the Deconvolutional Network.
+The code was tested on Ubuntu 16.04, with [Anaconda](https://www.anaconda.com/download) Python 3.6 and [PyTorch]((http://pytorch.org/)) v0.4.1. NVIDIA GPUs are needed for both training and testing. The PyTorch v1.x is also supported. The installation instruction can be followed by this [Issue](https://github.com/xingyizhou/CenterNet/issues/7). The key difference comes from the Deconvolutional Network.
 After install Anaconda:
 
 0. [Optional but recommended] create a new conda environment. 
