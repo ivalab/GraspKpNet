@@ -72,4 +72,6 @@ roslaunch handy_experiment static_grasp.launch
 roslaunch handy_expeirment dynamic_grasp.launch
 roslaunch handy_experiment bin_picking.launch
 ```
-Note: static grasping and grasping at varied camera angles experiments share the same source code.
+Note: 
+1. static grasping and grasping at varied camera angles experiments share the same source code.
+2. Running dynamic grasping experiment requires running dbrt for estimating the gripper's pose. All codes here stored in [here](https://github.com/ivalab/dbrt_for_handy). Please follow the instructions to setup everything before launch dynamic_grasp.launch.
