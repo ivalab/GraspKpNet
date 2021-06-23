@@ -18,14 +18,14 @@
 Legend: Termination Condition (TC) \
 *x*T - _x_ trials per object. \
 *x*F - Terminate when _x_ consecutive grasp failures occur for the same object or all objects removed.\
-*x*A - Max number of attempts for each run is limited to _x_ or all objects removed.\
+*x*A - Max number of attempts for each run is limited to _x_ or all objects removed.
 
-- [1] 6-DOF Grasping for Target-driven Object Manipulation in Clutter
-- [2] Contact-GraspNet: Efficient 6-DoF Grasp Generation in Cluttered Scenes
-- [3] Grasp Pose Detection in Point Clouds
-- [4] Learning to Generate 6-DoF Grasp Poses with Reachability Awareness
-- [5] PointNetGPD: Detecting Grasp Configurations from Point Sets
-- [6] PointNet++ Grasping: Learning An End-to-end Spatial Grasp Generation Algorithm from Sparse Point Clouds
-- [7] REGNet: REgion-based Grasp Network for End-to-end Grasp Detection in Point Clouds
-- [8] S4G: Amodal Single-view Single-Shot SE(3) Grasp Detection in Cluttered Scenes
-- [9] Using Geometry to Detect Grasp Grasps in 3D Point Clouds
+[1] 6-DOF Grasping for Target-driven Object Manipulation in Clutter \
+[2] Contact-GraspNet: Efficient 6-DoF Grasp Generation in Cluttered Scenes \
+[3] Grasp Pose Detection in Point Clouds \
+[4] Learning to Generate 6-DoF Grasp Poses with Reachability Awareness \
+[5] PointNetGPD: Detecting Grasp Configurations from Point Sets \
+[6] PointNet++ Grasping: Learning An End-to-end Spatial Grasp Generation Algorithm from Sparse Point Clouds \
+[7] REGNet: REgion-based Grasp Network for End-to-end Grasp Detection in Point Clouds \
+[8] S4G: Amodal Single-view Single-Shot SE(3) Grasp Detection in Cluttered Scenes \
+[9] Using Geometry to Detect Grasp Grasps in 3D Point Clouds
