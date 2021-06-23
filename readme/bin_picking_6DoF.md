@@ -16,7 +16,7 @@
 | [9] | 10 | 10 | 10 | 113/155 | 72.9% | 85.0% | 3F |
 
 Legend: Termination Condition (TC) \
-*x*T - _x_ try per object. \
+*x*T - _x_ trials per object. \
 *x*F - Terminate when _x_ consecutive grasp failures occur for the same object or all objects removed.\
 *x*A - Max number of attempts for each run is limited to _x_ or all objects removed.\
 
