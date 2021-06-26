@@ -347,10 +347,13 @@ def kinect_rgbd_callback(rgb_data, depth_data):
         M_CL, corners = get_M_CL(gray, img, False)
 
         # check if pick bin has been cleared
+        msg1 = Bool()
         if isPickbinClear(M_CL, depth_raw):
-            pub_end.publish(True)
+            msg1.data = True
+            pub_end.publish(msg1)
         else:
-            pub_end.publish(False)
+            msg1.data = False
+            pub_end.publish(msg1)
 
         # replace blue channel with the depth channel
         inp_image = pre_process(img_wo_at, depth)
@@ -360,9 +363,9 @@ def kinect_rgbd_callback(rgb_data, depth_data):
         ret = ret["results"]
 
         pose = KpsToGrasppose(ret, img, depth_raw, M_CL, M_BL, cameraMatrix)
-        msg = Float64MultiArray()
-        msg.data = pose
-        pub_res.publish(msg)
+        msg2 = Float64MultiArray()
+        msg2.data = pose
+        pub_res.publish(msg2)
 
     except CvBridgeError as e:
         print(e)

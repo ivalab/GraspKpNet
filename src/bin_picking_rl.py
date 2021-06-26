@@ -322,11 +322,13 @@ def run(opt, pipeline, align, depth_scale, pub_res, pub_end):
         M_CL = get_M_CL(gray, img, True)
 
         # check if pick bin has been cleared
+        msg1 = Bool()
         if isPickbinClear(M_CL, depth_raw):
-            pub_end.publish(True)
-            break
+            msg1.data = True
+            pub_end.publish(msg1)
         else:
-            pub_end.publish(False)
+            msg1.data = False
+            pub_end.publish(msg1)
 
         # pre-process rgb and depth images
         inp_image = pre_process(img, depth)
@@ -337,9 +339,9 @@ def run(opt, pipeline, align, depth_scale, pub_res, pub_end):
 
         pose = KpsToGrasppose(ret, img, depth_raw, M_CL)
 
-        msg = Float64MultiArray()
-        msg.data = pose
-        pub_res.publish(msg)
+        msg2 = Float64MultiArray()
+        msg2.data = pose
+        pub_res.publish(msg2)
 
     # Stop streaming
     pipeline.stop()
