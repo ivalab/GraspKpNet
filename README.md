@@ -69,8 +69,8 @@ Please refer to for [INSTALL.md](readme/INSTALL.md) installation instructions.
 
 ## Dataset
 The two training datasets are provided here:
-- Cornell: [Download link](https://www.dropbox.com/sh/x4t8p2wrqnfevo3/AAC2gLawRtm-986_JWxE0w0Za?dl=0)
-- Abridged Jacquard Dataset (AJD):[Download link](https://www.dropbox.com/sh/nikrxio9mbkxpub/AADpt-6MKbZFEO8wCmbT1Y3xa?dl=0).
+- Cornell: [Download link](https://www.dropbox.com/sh/x4t8p2wrqnfevo3/AAC2gLawRtm-986_JWxE0w0Za?dl=0). In case the download link expires in the future, you can also use the matlab scripts provided in the `GKNet_ROOT/scripts/data_aug` to generate your own dataset based on the original Cornell dataset. You will need to modify the corresponding path for loading the input images and output files.
+- Abridged Jacquard Dataset (AJD):[Download link](https://smartech.gatech.edu/handle/1853/64897).
 
 ## Usage
 After downloading datasets, place each dataset in the corresponding folder under `GKNet_ROOT/Dataset/`. 
