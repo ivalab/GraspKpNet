@@ -6,7 +6,6 @@ import numpy as np
 import copy
 
 from .image import transform_preds
-from .ddd_utils import ddd2locrot
 
 
 def get_pred_depth(depth):
