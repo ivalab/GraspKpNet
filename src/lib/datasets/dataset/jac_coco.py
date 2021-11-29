@@ -158,7 +158,7 @@ class JAC_COCO_36(data.Dataset):
                                       np.ascontiguousarray(boxes_gt[:, :4], dtype=np.float32),
                                       bbox_pr[:, -1], boxes_gt[:, -1])
 
-            if evaluate(overlaps, bbox_pr, boxes_gt):
+            if self.evaluate(overlaps, bbox_pr, boxes_gt):
                 nm_suc_case += 1
 
             bar.next()

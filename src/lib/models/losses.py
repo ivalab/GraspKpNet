@@ -152,7 +152,6 @@ def _neg_loss(pred, gt):
       gt_regr (batch x c x h x w)
   '''
   pred_inds = pred.lt(0).float()
-  print(pred)
 
   pos_inds = gt.eq(1).float()
   neg_inds = gt.lt(1).float()
