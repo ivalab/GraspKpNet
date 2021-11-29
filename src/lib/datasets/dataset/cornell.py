@@ -95,7 +95,7 @@ class CORNELL(data.Dataset):
         self.split = split
         self.opt = opt
 
-        self.data_dir = os.path.join(opt.data_dir, 'Cornell/rgd_5_5_5_corner_p_full_data')
+        self.data_dir = os.path.join(opt.data_dir, 'Cornell/rgd_5_5_5_corner_p_full/data')
         self.img_dir = os.path.join(self.data_dir, 'Images')
         self.annot_path = os.path.join(self.data_dir, 'Annotations')
         self.filelist_dir = os.path.join(self.data_dir, 'ImageSets', '{}.txt'.format(split))

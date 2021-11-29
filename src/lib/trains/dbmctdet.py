@@ -7,10 +7,8 @@ import numpy as np
 
 from models.losses import FocalLoss
 from models.losses import RegL1Loss, RegLoss, NormRegL1Loss, RegWeightedL1Loss, TagLoss_2
-from models.decode import ctdet_decode
 from models.utils import _sigmoid
 from utils.debugger import Debugger
-from utils.post_process import ctdet_post_process
 from utils.oracle_utils import gen_oracle_map
 from .base_trainer import BaseTrainer
 
