@@ -78,12 +78,12 @@ Download models [ctdet_coco_dla_2x](https://www.dropbox.com/sh/eicrmhhay2wi8fy/A
 ### Training
 For training the Cornell Dataset:
 ~~~
-python main.py dbmctdet_cornell --exp_id dla34 --batch_size 4 --lr 1.25e-4 --arch dla_34 --dataset cornell --num_epochs 15 --val_intervals 1 --save_all
+python main.py dbmctdet_cornell --exp_id dla34 --batch_size 4 --lr 1.25e-4 --arch dla_34 --dataset cornell --load_model ../models/ctdet_coco_dla_2x.pth --num_epochs 15 --val_intervals 1 --save_all --lr_step 5,10
 ~~~
 
 For training AJD:
 ~~~
-python main.py dbmctdet --exp_id dla34 --batch_size 4 --lr 1.25e-4 --arch dla_34 --dataset jac_coco_36 --num_epochs 30 --val_intervals 1 --save_all --load_model ../models/ctdet_coco_dla_2x.pth
+python main.py dbmctdet --exp_id dla34 --batch_size 4 --lr 1.25e-4 --arch dla_34 --dataset jac_coco_36 --load_model ../models/ctdet_coco_dla_2x.pth --num_epochs 30 --val_intervals 1 --save_all
 ~~~
 
 ### Evaluation
