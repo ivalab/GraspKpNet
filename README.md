@@ -132,3 +132,12 @@ GKNet is released under the MIT License (refer to the LICENSE file for details).
 Portions of the code are borrowed from [CenterNet](https://github.com/xingyizhou/CenterNet), [dla](https://github.com/ucbdrive/dla) (DLA network), [DCNv2](https://github.com/CharlesShang/DCNv2)(deformable convolutions). Please refer to the original License of these projects (See [Notice](https://github.com/ivalab/GKNet/blob/master/NOTICE)).
 
 ## Citation
+If you use GKNet in your work, please cite:
+```
+@article{xu2021gknet,
+  title={GKNet: grasp keypoint network for grasp candidates detection},
+  author={Xu, Ruinian and Chu, Fu-Jen and Vela, Patricio A},
+  journal={arXiv preprint arXiv:2106.08497},
+  year={2021}
+}
+```
