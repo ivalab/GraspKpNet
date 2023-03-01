@@ -16,7 +16,7 @@ import torch
 import torch.nn as nn
 
 from typing import Any
-from .DCNv2.dcn_v2 import DCN
+from DCNv2.dcn_v2 import DCN
 import torch.utils.model_zoo as model_zoo
 
 from .non_local import NLBlockND
