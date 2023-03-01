@@ -1,0 +1,16 @@
+# Launch a ros master with the controller manager and associated services
+#
+version: "3.8"
+
+services:
+  # base container -- will simply exit once brought up
+  # we can run commands via this container for running experiments, etc.
+  base: &base
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.noetic
+    network_mode: host
+    volumes:
+      - ./:/app/
+
+
