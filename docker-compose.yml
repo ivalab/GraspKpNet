@@ -1,5 +1,4 @@
 # Launch a ros master with the controller manager and associated services
-#
 version: "3.8"
 
 services:
@@ -12,5 +11,12 @@ services:
     network_mode: host
     volumes:
       - ./:/app/
-
-
+  gpu:
+    <<: *base
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
