@@ -115,3 +115,8 @@ ENV/
 
 # cache file
 *~
+
+# experiments
+/exp/
+/datasets/
+/models/
