@@ -13,7 +13,7 @@ from torch import nn
 import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
 
-from DCNv2.dcn_v2 import DCN
+from dcn_v2 import DCN
 from .non_local import NLBlockND
 
 BN_MOMENTUM = 0.1

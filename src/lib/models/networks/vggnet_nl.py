@@ -14,7 +14,7 @@ import logging
 
 import torch
 import torch.nn as nn
-from DCNv2.dcn_v2 import DCN
+from dcn_v2 import DCN
 import torch.utils.model_zoo as model_zoo
 from typing import Union, List, Dict, Any, cast
 
