@@ -79,7 +79,7 @@ After install Anaconda:
 
 ## Docker Installation
 
-We have packed a docker image for you to run the code.
+We have built a docker image with Ubuntu 20.04, ROS Noetic, and PyTorch 1.13.1.
 Make sure you have nvidia-docker installed.
 Then build the docker image.
 At the root of the repository, run the following command:
