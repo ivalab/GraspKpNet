@@ -1,8 +1,6 @@
-# GKNet
+# GKNet: Grasp Keypoint Network for Grasp Candidates Detection
 
-Grasp Keypoint Network for Grasp Candidates Detection
-
-![](https://github.com/ivalab/GraspKpNet/blob/main/demo/fig_ill_mul_resized.png)
+![fig_ill_mul_resized](./demo/fig_ill_mul_resized.png)
 
 > **GKNet: grasp keypoint network for Grasp Candidates Detection** <br>
 > Ruinian Xu, Fu-Jen Chu and Patricio A. Vela
@@ -156,12 +154,12 @@ python test.py dbmctdet \
 
 ## Develop
 
-If you are interested in training GKNet on a new or customized dataset, please refer to [DEVELOP.md](https://github.com/ivalab/GraspKpNet/blob/master/readme/DEVELOP.md).
+If you are interested in training GKNet on a new or customized dataset, please refer to [DEVELOP.md](./docs/DEVELOP.md).
 Also you can leave your issues here if you meet some problems.
 
 ## Physical Experiments
 
-To run physical experiments with GKNet and ROS, please follow the instructions provided in [Experiment.md](https://github.com/ivalab/GraspKpNet/blob/master/readme/experiment.md).
+To run physical experiments with GKNet and ROS, please follow the instructions provided in [Experiment.md](./docs/experiment.md).
 
 ## Supplemental Material
 
@@ -169,12 +167,12 @@ This section collects results of some experiments or discussions which aren't do
 
 ### Keypoint representation
 
-This [readme](https://github.com/ivalab/GraspKpNet/blob/main/readme/kp_rep.md) file documents some examples with visualiztions for Top-left, bottom-left and bottom-right (TlBlBr) grasp keypoint representation.
+This [readme](./docs/kp_rep.md) file documents some examples with visualiztions for Top-left, bottom-left and bottom-right (TlBlBr) grasp keypoint representation.
 Theseexamples help clarify the effectiveness of grasp keypoint representation of less number of keypoints.
 
 ### Tuning hyper-parameters of alpha, beta and gamma.
 
-The result is recorded in [tune_hp.md](https://github.com/ivalab/GraspKpNet/blob/main/readme/tune_kp.md)
+The result is recorded in [tune_hp.md](./docs/tune_kp.md)
 
 ### Demo video
 
@@ -185,8 +183,8 @@ The demo video of all physical experiments are uploaded on the [Youtube](https:/
 Some of the source data was summarized with the raw source data not provided.
 The links below provide access to the source material:
 
-- [Trial results of bin picking](https://github.com/ivalab/GraspKpNet/blob/main/readme/bin_picking.md) experiment.
-- [6-DoF summary results](https://github.com/ivalab/GraspKpNet/blob/main/readme/bin_picking_6DoF.md) for clutter clearance or bin-picking tasks.
+- [Trial results of bin picking](./docs/bin_picking.md) experiment.
+- [6-DoF summary results](./docs/bin_picking_6DoF.md) for clutter clearance or bin-picking tasks.
 
 ### Implementation of GGCNN
 
