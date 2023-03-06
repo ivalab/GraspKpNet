@@ -8,9 +8,11 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.noetic
+    image: ivalab/graspkpnet:latest
     network_mode: host
     volumes:
       - ./:/app/
+      - .cache/torch:/root/.cache/torch
   gpu:
     <<: *base
     deploy:
