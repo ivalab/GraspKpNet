@@ -1,5 +1,7 @@
 # Installation
 
+## Manual Installation
+
 The code was tested on Ubuntu 16.04, with [Anaconda](https://www.anaconda.com/download) Python 3.6 and [PyTorch](<(http://pytorch.org/)>) v0.4.1.
 NVIDIA GPUs are needed for both training and testing.
 The PyTorch v1.x is also supported.
@@ -74,3 +76,23 @@ After install Anaconda:
    cd $CenterNet_ROOT/src/lib/external
    make
    ```
+
+## Docker Installation
+
+We have packed a docker image for you to run the code.
+Make sure you have nvidia-docker installed.
+Then build the docker image.
+At the root of the repository, run the following command:
+
+```bash
+docker compose build base
+```
+
+Run the container:
+
+```bash
+docker compose run --rm gpu
+```
+
+The base container can build the code without having access to a GPU, and is useful for exploring the structure of the project and environment.
+The actual code must be run from a container that has access to a GPU.
