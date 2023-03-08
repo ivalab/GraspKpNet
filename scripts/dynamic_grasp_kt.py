@@ -1,48 +1,42 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import _init_paths
-
-import os
-import json
 import cv2
 import cv2.aruco as aruco
 import numpy as np
 import sys
 
 import rospy
-from std_msgs.msg import Bool
 from std_msgs.msg import Float64MultiArray
 from sensor_msgs.msg import Image, CameraInfo
 from cv_bridge import CvBridge, CvBridgeError
 import message_filters
 
-import torch
+from gknet.opts import opts
+from gknet.datasets.dataset_factory import dataset_factory
+from gknet.detectors.detector_factory import detector_factory
 
-from external.nms import soft_nms
-from opts import opts
-from logger import Logger
-from utils.utils import AverageMeter
-from datasets.dataset_factory import dataset_factory
-from detectors.detector_factory import detector_factory
 # transformation from the robot base to aruco tag
-M_BL = np.array([[1., 0., 0.,  0.30000],
-                 [0., 1., 0.,  0.32000],
-                 [0., 0., 1.,  -0.0450],
-                 [0., 0., 0.,  1.00000]])
+M_BL = np.array(
+    [
+        [1.0, 0.0, 0.0, 0.30000],
+        [0.0, 1.0, 0.0, 0.32000],
+        [0.0, 0.0, 1.0, -0.0450],
+        [0.0, 0.0, 0.0, 1.00000],
+    ]
+)
 
 # default transformation from the camera to aruco tag
-default_M_CL = np.array([[-0.07134498, -0.99639369,  0.0459293,  -0.13825178],
-                         [-0.8045912,   0.03027403, -0.59305689,  0.08434352],
-                         [ 0.58952768, -0.07926594, -0.8038495,   0.66103522],
-                         [ 0.,          0.,          0.,          1.        ]]
-                        )
+default_M_CL = np.array(
+    [
+        [-0.07134498, -0.99639369, 0.0459293, -0.13825178],
+        [-0.8045912, 0.03027403, -0.59305689, 0.08434352],
+        [0.58952768, -0.07926594, -0.8038495, 0.66103522],
+        [0.0, 0.0, 0.0, 1.0],
+    ]
+)
 
 # camera intrinsic matrix of Realsense D435
-cameraMatrix = np.array([[607.47165, 0.0,  325.90064],
-                         [0.0, 606.30420, 240.91934],
-                         [0.0, 0.0, 1.0]])
+cameraMatrix = np.array(
+    [[607.47165, 0.0, 325.90064], [0.0, 606.30420, 240.91934], [0.0, 0.0, 1.0]]
+)
 
 # distortion of Realsense D435
 distCoeffs = np.array([0.08847, -0.04283, 0.00134, -0.00102, 0.0])
@@ -56,9 +50,10 @@ Detector = detector_factory[opt.task]
 detector = Detector(opt)
 
 # Publisher of perception result
-pub_res = rospy.Publisher('/result', Float64MultiArray, queue_size=10)
+pub_res = rospy.Publisher("/result", Float64MultiArray, queue_size=10)
 
 prev_detection = None
+
 
 def get_M_CL_info(gray, image_init, visualize=False):
     # parameters
@@ -67,14 +62,17 @@ def get_M_CL_info(gray, image_init, visualize=False):
     # aruco_dict_CL = aruco.Dictionary_get(aruco.DICT_6X6_250)
     parameters = aruco.DetectorParameters_create()
 
-    corners_CL, ids_CL, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict_CL, parameters=parameters)
+    corners_CL, ids_CL, rejectedImgPoints = aruco.detectMarkers(
+        gray, aruco_dict_CL, parameters=parameters
+    )
 
     # for the first frame, it may contain nothing
     if ids_CL is None:
         return default_M_CL, None
 
-    rvec_CL, tvec_CL, _objPoints_CL = aruco.estimatePoseSingleMarkers(corners_CL[0], markerLength_CL,
-                                                                      cameraMatrix, distCoeffs)
+    rvec_CL, tvec_CL, _objPoints_CL = aruco.estimatePoseSingleMarkers(
+        corners_CL[0], markerLength_CL, cameraMatrix, distCoeffs
+    )
     dst_CL, jacobian_CL = cv2.Rodrigues(rvec_CL)
     M_CL = np.zeros((4, 4))
     M_CL[:3, :3] = dst_CL
@@ -83,7 +81,9 @@ def get_M_CL_info(gray, image_init, visualize=False):
 
     if visualize:
         # print('aruco is located at mean position (%d, %d)' %(mean_x ,mean_y))
-        aruco.drawAxis(image_init, cameraMatrix, distCoeffs, rvec_CL, tvec_CL, markerLength_CL)
+        aruco.drawAxis(
+            image_init, cameraMatrix, distCoeffs, rvec_CL, tvec_CL, markerLength_CL
+        )
     return M_CL, corners_CL[0][0, :, :]
 
 
@@ -113,30 +113,33 @@ def aruco_tag_remove(rgb_image, corners):
 
     return img_out
 
+
 def project(pixel, depth_image, M_CL, M_BL, cameraMatrix):
-    '''
-     project 2d pixel on the image to 3d by depth info
-     :param pixel: x, y
-     :param M_CL: trans from camera to aruco tag
-     :param cameraMatrix: camera intrinsic matrix
-     :param depth_image: depth image
-     :param depth_scale: depth scale that trans raw data to mm
-     :return:
-     q_B: 3d coordinate of pixel with respect to base frame
-     '''
+    """
+    project 2d pixel on the image to 3d by depth info
+    :param pixel: x, y
+    :param M_CL: trans from camera to aruco tag
+    :param cameraMatrix: camera intrinsic matrix
+    :param depth_image: depth image
+    :param depth_scale: depth scale that trans raw data to mm
+    :return:
+    q_B: 3d coordinate of pixel with respect to base frame
+    """
     depth = depth_image[pixel[1], pixel[0]]
     moving_pixel = [pixel[0], pixel[1]]
     while depth == 0:
-        moving_pixel = [moving_pixel[0], moving_pixel[1]-1]
+        moving_pixel = [moving_pixel[0], moving_pixel[1] - 1]
         depth = depth_image[moving_pixel[1], moving_pixel[0]]
 
     pxl = np.linalg.inv(cameraMatrix).dot(
-        np.array([pixel[0] * depth, pixel[1] * depth, depth]))
+        np.array([pixel[0] * depth, pixel[1] * depth, depth])
+    )
     q_C = np.array([pxl[0], pxl[1], pxl[2], 1])
     q_L = np.linalg.inv(M_CL).dot(q_C)
     q_B = M_BL.dot(q_L)
 
     return q_B
+
 
 def pre_process(rgb_img, depth_img):
     inp_image = rgb_img
@@ -145,6 +148,7 @@ def pre_process(rgb_img, depth_img):
     inp_image = cv2.resize(inp_image, (256, 256))
 
     return inp_image
+
 
 def kinect_rgbd_callback(rgb_data, depth_data):
     """
@@ -194,12 +198,16 @@ def kinect_rgbd_callback(rgb_data, depth_data):
     except CvBridgeError as e:
         print(e)
 
+
 def isWithinRange(pxl, w, h):
     x, y = pxl[:]
 
-    return w/12. <= x <= 11*w/12 and h/12. <= y <= 11*h/12
+    return w / 12.0 <= x <= 11 * w / 12 and h / 12.0 <= y <= 11 * h / 12
 
-def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, M_BL, cameraMatrix, visualize=True):
+
+def KpsToGrasppose(
+    net_output, rgb_img, depth_map, M_CL, M_BL, cameraMatrix, visualize=True
+):
     kps_pr = []
     for category_id, preds in net_output.items():
         if len(preds) == 0:
@@ -226,7 +234,7 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, M_BL, cameraMatrix, vis
     else:
         dist = sys.maxsize
         for kp_pr in kps_pr[:5]:
-            f_w, f_h = 640. / 512., 480. / 512.
+            f_w, f_h = 640.0 / 512.0, 480.0 / 512.0
             kp_lm = [int(kp_pr[0] * f_w), int(kp_pr[1] * f_h)]
             kp_rm = [int(kp_pr[2] * f_w), int(kp_pr[3] * f_h)]
             center = [int((kp_lm[0] + kp_rm[0]) / 2), int((kp_lm[1] + kp_rm[1]) / 2)]
@@ -240,10 +248,10 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, M_BL, cameraMatrix, vis
     if res is None:
         res = prev_detection
 
-    f_w, f_h = 640./512., 480./512.
-    kp_lm = (int(res[0]*f_w), int(res[1]*f_h))
-    kp_rm = (int(res[2]*f_w), int(res[3]*f_h))
-    center = (int((kp_lm[0]+kp_rm[0])/2), int((kp_lm[1]+kp_rm[1])/2))
+    f_w, f_h = 640.0 / 512.0, 480.0 / 512.0
+    kp_lm = (int(res[0] * f_w), int(res[1] * f_h))
+    kp_rm = (int(res[2] * f_w), int(res[3] * f_h))
+    center = (int((kp_lm[0] + kp_rm[0]) / 2), int((kp_lm[1] + kp_rm[1]) / 2))
 
     kp_lm_3d = project(kp_lm, depth_map, M_CL, M_BL, cameraMatrix)
     kp_rm_3d = project(kp_rm, depth_map, M_CL, M_BL, cameraMatrix)
@@ -262,8 +270,14 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, M_BL, cameraMatrix, vis
     dist = np.linalg.norm(kp_lm_3d[:2] - kp_rm_3d[:2])
 
     # draw arrow for left-middle and right-middle key-points
-    lm_ep = (int(kp_lm[0] + (kp_rm[0] - kp_lm[0]) / 5.), int(kp_lm[1] + (kp_rm[1] - kp_lm[1]) / 5.))
-    rm_ep = (int(kp_rm[0] + (kp_lm[0] - kp_rm[0]) / 5.), int(kp_rm[1] + (kp_lm[1] - kp_rm[1]) / 5.))
+    lm_ep = (
+        int(kp_lm[0] + (kp_rm[0] - kp_lm[0]) / 5.0),
+        int(kp_lm[1] + (kp_rm[1] - kp_lm[1]) / 5.0),
+    )
+    rm_ep = (
+        int(kp_rm[0] + (kp_lm[0] - kp_rm[0]) / 5.0),
+        int(kp_rm[1] + (kp_lm[1] - kp_rm[1]) / 5.0),
+    )
     rgb_img = cv2.arrowedLine(rgb_img, kp_lm, lm_ep, (0, 0, 0), 2)
     rgb_img = cv2.arrowedLine(rgb_img, kp_rm, rm_ep, (0, 0, 0), 2)
     # draw left-middle, right-middle and center key-points
@@ -272,12 +286,13 @@ def KpsToGrasppose(net_output, rgb_img, depth_map, M_CL, M_BL, cameraMatrix, vis
     rgb_img = cv2.circle(rgb_img, (int(center[0]), int(center[1])), 2, (0, 0, 255), 2)
 
     if visualize:
-        cv2.namedWindow('visual', cv2.WINDOW_AUTOSIZE)
-        cv2.imshow('visual', rgb_img)
+        cv2.namedWindow("visual", cv2.WINDOW_AUTOSIZE)
+        cv2.imshow("visual", rgb_img)
 
     return [center_3d[0], center_3d[1], center_3d[2], orientation, dist]
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # initialize ros node
     rospy.init_node("Dynamic_grasping")
 
@@ -285,7 +300,9 @@ if __name__ == '__main__':
     cv_bridge = CvBridge()
     cv2.WITH_QT = False
     # Get camera calibration parameters
-    cam_param = rospy.wait_for_message('/camera/rgb/camera_info', CameraInfo, timeout=None)
+    cam_param = rospy.wait_for_message(
+        "/camera/rgb/camera_info", CameraInfo, timeout=None
+    )
 
     # Subscribe to rgb and depth channel
     image_sub = message_filters.Subscriber("/camera/rgb/image_rect_color", Image)

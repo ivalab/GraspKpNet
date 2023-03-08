@@ -1,25 +1,19 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import _init_paths
-
 import os
-import json
 import cv2
 import numpy as np
 from progress.bar import Bar
 import torch
 import math
 
-from opts import opts
-from logger import Logger
-from datasets.dataset_factory import dataset_factory
-from debuggers.debugger_factory import debugger_factory
+from gknet.opts import opts
+from gknet.logger import Logger
+from gknet.datasets.dataset_factory import dataset_factory
+from gknet.debuggers.debugger_factory import debugger_factory
 
-from utils.image import get_affine_transform, affine_transform
-from utils.image import gaussian_radius, draw_umich_gaussian, draw_msra_gaussian
-from datasets.dataset.utils import _bbox_overlaps
+from gknet.utils.image import get_affine_transform, affine_transform
+from gknet.utils.image import gaussian_radius, draw_umich_gaussian, draw_msra_gaussian
+from gknet.datasets.dataset.utils import _bbox_overlaps
+
 
 class PrefetchDataset(torch.utils.data.Dataset):
     def __init__(self, opt, dataset):
@@ -28,11 +22,12 @@ class PrefetchDataset(torch.utils.data.Dataset):
         self.img_dir = dataset.img_dir
         self.opt = opt
         self.max_objs = 256
-        self.split = 'test'
+        self.split = "test"
 
     def _coco_box_to_bbox(self, box):
-        bbox = np.array([box[0], box[1], box[0] + box[2], box[1] + box[3]],
-                        dtype=np.float32)
+        bbox = np.array(
+            [box[0], box[1], box[0] + box[2], box[1] + box[3]], dtype=np.float32
+        )
         return bbox
 
     def _bbox_to_tripoints(self, bbox, angle):
@@ -52,25 +47,45 @@ class PrefetchDataset(torch.utils.data.Dataset):
         theta_1 = theta + angle
         theta_2 = np.pi - theta + angle
 
-        '''
+        """
         Polygon order:
         R(right) L(left) T(top) B(bottom)
         TR->TL->BL->BR
-        '''
-        p1 = np.array([math.cos(theta_1) * diagonal + x_center, -math.sin(theta_1) * diagonal + y_center],
-                      dtype=np.float32)
-        p2 = np.array([math.cos(theta_2) * diagonal + x_center, -math.sin(theta_2) * diagonal + y_center],
-                      dtype=np.float32)
-        p3 = np.array([-math.cos(theta_1) * diagonal + x_center, math.sin(theta_1) * diagonal + y_center],
-                      dtype=np.float32)
-        p4 = np.array([-math.cos(theta_2) * diagonal + x_center, math.sin(theta_2) * diagonal + y_center],
-                      dtype=np.float32)
+        """
+        p1 = np.array(
+            [
+                math.cos(theta_1) * diagonal + x_center,
+                -math.sin(theta_1) * diagonal + y_center,
+            ],
+            dtype=np.float32,
+        )
+        p2 = np.array(
+            [
+                math.cos(theta_2) * diagonal + x_center,
+                -math.sin(theta_2) * diagonal + y_center,
+            ],
+            dtype=np.float32,
+        )
+        p3 = np.array(
+            [
+                -math.cos(theta_1) * diagonal + x_center,
+                math.sin(theta_1) * diagonal + y_center,
+            ],
+            dtype=np.float32,
+        )
+        p4 = np.array(
+            [
+                -math.cos(theta_2) * diagonal + x_center,
+                math.sin(theta_2) * diagonal + y_center,
+            ],
+            dtype=np.float32,
+        )
 
         return p2, p3, p4
 
     def __getitem__(self, index):
         img_id = self.images[index]
-        file_name = self.dataset.coco.loadImgs(ids=[img_id])[0]['file_name']
+        file_name = self.dataset.coco.loadImgs(ids=[img_id])[0]["file_name"]
         img_path = os.path.join(self.img_dir, file_name)
         ann_ids = self.dataset.coco.getAnnIds(imgIds=[img_id])
         anns = self.dataset.coco.loadAnns(ids=ann_ids)
@@ -79,7 +94,7 @@ class PrefetchDataset(torch.utils.data.Dataset):
         img = cv2.imread(img_path)
 
         height, width = img.shape[0], img.shape[1]
-        c = np.array([img.shape[1] / 2., img.shape[0] / 2.], dtype=np.float32)
+        c = np.array([img.shape[1] / 2.0, img.shape[0] / 2.0], dtype=np.float32)
         if self.opt.keep_res:
             input_h = (height | self.opt.pad) + 1
             input_w = (width | self.opt.pad) + 1
@@ -108,12 +123,11 @@ class PrefetchDataset(torch.utils.data.Dataset):
         #         img = img[:, ::-1, :]
         #         c[0] = width - c[0] - 1
 
-        trans_input = get_affine_transform(
-            c, s, 0, [input_w, input_h])
-        inp = cv2.warpAffine(img, trans_input,
-                             (input_w, input_h),
-                             flags=cv2.INTER_LINEAR)
-        inp = (inp.astype(np.float32) / 255.)
+        trans_input = get_affine_transform(c, s, 0, [input_w, input_h])
+        inp = cv2.warpAffine(
+            img, trans_input, (input_w, input_h), flags=cv2.INTER_LINEAR
+        )
+        inp = inp.astype(np.float32) / 255.0
         # if self.split == 'train' and not self.opt.no_color_aug:
         #     color_aug(self._data_rng, inp, self._eig_val, self._eig_vec)
         inp = (inp - self.dataset.mean) / self.dataset.std
@@ -139,30 +153,44 @@ class PrefetchDataset(torch.utils.data.Dataset):
         reg_mask = np.zeros((self.max_objs), dtype=np.uint8)
         bbox_gt = np.zeros((self.max_objs, 5), dtype=np.float32)
 
-        draw_gaussian = draw_msra_gaussian if self.opt.mse_loss else \
-            draw_umich_gaussian
+        draw_gaussian = draw_msra_gaussian if self.opt.mse_loss else draw_umich_gaussian
 
         for k in range(num_objs):
             ann = anns[k]
-            bbox = self._coco_box_to_bbox(ann['bbox'])
+            bbox = self._coco_box_to_bbox(ann["bbox"])
             # skip the class for the whole object
-            if ann['category_id'] == 37:
+            if ann["category_id"] == 37:
                 continue
-            cls_id = int(self.dataset.cat_ids[ann['category_id']])
+            cls_id = int(self.dataset.cat_ids[ann["category_id"]])
 
             # if flipped:
             #     bbox[[0, 2]] = width - bbox[[2, 0]] - 1
             bbox[:2] = affine_transform(bbox[:2], trans_output)
             bbox[2:] = affine_transform(bbox[2:], trans_output)
             # convert bbox to tl, bl, br points
-            ftl_p, fbl_p, fbr_p = self._bbox_to_tripoints(bbox[:4], ann['bbox'][-1] / 180 * np.pi)
+            ftl_p, fbl_p, fbr_p = self._bbox_to_tripoints(
+                bbox[:4], ann["bbox"][-1] / 180 * np.pi
+            )
             # compute center point
-            fct_p = np.array([(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2], dtype=np.float32)
+            fct_p = np.array(
+                [(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2], dtype=np.float32
+            )
 
             # skip the bounding box whose points beyond the border after affine transformation and rotation
-            if ftl_p[0] < 0 or ftl_p[0] > output_w - 1 or ftl_p[1] < 0 or ftl_p[1] > output_h - 1 or \
-                            fbl_p[0] < 0 or fbl_p[0] > output_w - 1 or fbl_p[1] < 0 or fbl_p[1] > output_h - 1 or \
-                            fbr_p[0] < 0 or fbr_p[0] > output_w - 1 or fbr_p[1] < 0 or fbr_p[1] > output_h - 1:
+            if (
+                ftl_p[0] < 0
+                or ftl_p[0] > output_w - 1
+                or ftl_p[1] < 0
+                or ftl_p[1] > output_h - 1
+                or fbl_p[0] < 0
+                or fbl_p[0] > output_w - 1
+                or fbl_p[1] < 0
+                or fbl_p[1] > output_h - 1
+                or fbr_p[0] < 0
+                or fbr_p[0] > output_w - 1
+                or fbr_p[1] < 0
+                or fbr_p[1] > output_h - 1
+            ):
                 continue
 
             tl_p = ftl_p.astype(np.int32)
@@ -183,7 +211,13 @@ class PrefetchDataset(torch.utils.data.Dataset):
                 draw_gaussian(br_heatmaps[cls_id], br_p, radius)
                 draw_gaussian(ct_heatmaps[cls_id], ct_p, radius)
 
-                bbox_gt[k] = [bbox[0], bbox[1], bbox[2], bbox[3], ann['bbox'][-1] / 180 * np.pi]
+                bbox_gt[k] = [
+                    bbox[0],
+                    bbox[1],
+                    bbox[2],
+                    bbox[3],
+                    ann["bbox"][-1] / 180 * np.pi,
+                ]
 
                 tl_tag[k] = tl_p[1] * output_w + tl_p[0]
                 bl_tag[k] = bl_p[1] * output_w + bl_p[0]
@@ -197,9 +231,23 @@ class PrefetchDataset(torch.utils.data.Dataset):
 
                 reg_mask[k] = 1
 
-        ret = {'input': inp, 'tl': tl_heatmaps, 'bl': bl_heatmaps, 'br': br_heatmaps, 'ct': ct_heatmaps, \
-               'tl_tag': tl_tag, 'bl_tag': bl_tag, 'br_tag': br_tag, 'ct_tag': ct_tag, \
-               'tl_reg': tl_reg, 'bl_reg': bl_reg, 'br_reg': br_reg, 'ct_reg': ct_reg, 'reg_mask': reg_mask, 'bbox': bbox_gt}
+        ret = {
+            "input": inp,
+            "tl": tl_heatmaps,
+            "bl": bl_heatmaps,
+            "br": br_heatmaps,
+            "ct": ct_heatmaps,
+            "tl_tag": tl_tag,
+            "bl_tag": bl_tag,
+            "br_tag": br_tag,
+            "ct_tag": ct_tag,
+            "tl_reg": tl_reg,
+            "bl_reg": bl_reg,
+            "br_reg": br_reg,
+            "ct_reg": ct_reg,
+            "reg_mask": reg_mask,
+            "bbox": bbox_gt,
+        }
 
         return img_id, ret
 
@@ -208,7 +256,7 @@ class PrefetchDataset(torch.utils.data.Dataset):
 
 
 def prefetch_test(opt):
-    os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str
+    os.environ["CUDA_VISIBLE_DEVICES"] = opt.gpus_str
 
     Dataset = dataset_factory[opt.dataset]
     opt = opts().update_dataset_info_and_set_heads(opt, Dataset)
@@ -216,13 +264,17 @@ def prefetch_test(opt):
     Logger(opt)
     Debugger = debugger_factory[opt.task]
 
-    split = 'test' if not opt.trainval else 'test'
+    split = "test" if not opt.trainval else "test"
     dataset = Dataset(opt, split)
     debugger = Debugger(opt)
 
     data_loader = torch.utils.data.DataLoader(
         PrefetchDataset(opt, dataset),
-        batch_size=1, shuffle=False, num_workers=1, pin_memory=True)
+        batch_size=1,
+        shuffle=False,
+        num_workers=1,
+        pin_memory=True,
+    )
 
     num_iters = len(dataset)
     min_dist = 1e10
@@ -230,7 +282,7 @@ def prefetch_test(opt):
     avg_dist = 0.0
     nm_match = 0
     results = {}
-    bar = Bar('{}'.format(opt.exp_id), max=num_iters)
+    bar = Bar("{}".format(opt.exp_id), max=num_iters)
     for ind, (img_id, targets) in enumerate(data_loader):
         # minimum, maximum, average, flag_found_match = debugger.run(targets)
         # # minimum, maximum, average = debugger.run(targets)
@@ -243,16 +295,20 @@ def prefetch_test(opt):
         # if flag_found_match:
         #     nm_match += 1
         ret = debugger.statistics(targets)
-        results[img_id.numpy().astype(np.int32)[0]] = ret['results']
+        results[img_id.numpy().astype(np.int32)[0]] = ret["results"]
 
-        Bar.suffix = '[{0}/{1}]|Tot: {total:} |ETA: {eta:} '.format(
-            ind, num_iters, total=bar.elapsed_td, eta=bar.eta_td)
+        Bar.suffix = "[{0}/{1}]|Tot: {total:} |ETA: {eta:} ".format(
+            ind, num_iters, total=bar.elapsed_td, eta=bar.eta_td
+        )
         bar.next()
     bar.finish()
 
     dataset_size = len(results)
     fail_case_image_id = []
-    file_image_id = open('/home/ruinianxu/IVA_Lab/Project/TripleNet/exp/trictdet/tri_dla_jac_coco_36_correctized/debug/fail_case_image_id.txt', 'r')
+    file_image_id = open(
+        "/home/ruinianxu/IVA_Lab/Project/TripleNet/exp/trictdet/tri_dla_jac_coco_36_correctized/debug/fail_case_image_id.txt",
+        "r",
+    )
     line = file_image_id.readline()
     while line:
         fail_case_image_id.append(int(line))
@@ -264,8 +320,9 @@ def prefetch_test(opt):
 
     fail_cases = []
     for image_id, result in results.items():
-        Bar.suffix = '[{0}/{1}]|Tot: {total:} |ETA: {eta:} '.format(
-            image_id, dataset_size, total=bar.elapsed_td, eta=bar.eta_td)
+        Bar.suffix = "[{0}/{1}]|Tot: {total:} |ETA: {eta:} ".format(
+            image_id, dataset_size, total=bar.elapsed_td, eta=bar.eta_td
+        )
 
         if image_id not in fail_case_image_id:
             continue
@@ -313,20 +370,20 @@ def prefetch_test(opt):
             br_y = bbox_pr[5]
 
             # center
-            x_c = (tl_x + br_x) / 2.
-            y_c = (tl_y + br_y) / 2.
+            x_c = (tl_x + br_x) / 2.0
+            y_c = (tl_y + br_y) / 2.0
 
             if bl_x == br_x:
                 p_y = tl_y
                 p_x = br_x
                 if br_y > bl_y:
-                    angle = np.pi / 2.
+                    angle = np.pi / 2.0
                 else:
-                    angle = -np.pi / 2.
+                    angle = -np.pi / 2.0
             elif bl_y == br_y:
                 p_x = tl_x
                 p_y = br_y
-                angle = 0.
+                angle = 0.0
             else:
 
                 # angle
@@ -336,35 +393,50 @@ def prefetch_test(opt):
                 b = br_y - a * br_x
                 delta_x = br_x - bl_x
                 delta_y = br_y - bl_y
-                p_x = (delta_x * tl_x + delta_y * tl_y - delta_y * b) / (delta_x + delta_y * a)
+                p_x = (delta_x * tl_x + delta_y * tl_y - delta_y * b) / (
+                    delta_x + delta_y * a
+                )
                 p_y = a * p_x + b
             # w, h
             w = np.sqrt((br_x - p_x) * (br_x - p_x) + (br_y - p_y) * (br_y - p_y))
             h = np.sqrt((tl_x - p_x) * (tl_x - p_x) + (tl_y - p_y) * (tl_y - p_y))
 
-            bbox_coord_pr.append([x_c - w / 2, y_c - h / 2, x_c + w / 2, y_c + h / 2, angle])
+            bbox_coord_pr.append(
+                [x_c - w / 2, y_c - h / 2, x_c + w / 2, y_c + h / 2, angle]
+            )
         bbox_coord_pr = np.array(bbox_coord_pr)
 
         boxes_coord_gt = []
 
         for anno in annotations:
             # skip if predicted bbox is 37 or there is no bbox predicted for this category id
-            if anno['category_id'] == 37:
+            if anno["category_id"] == 37:
                 continue
-            bbox_gt = anno['bbox']
+            bbox_gt = anno["bbox"]
             x_min = bbox_gt[0]
             y_min = bbox_gt[1]
             w = bbox_gt[2]
             h = bbox_gt[3]
             angle = bbox_gt[4] / 180 * np.pi
-            boxes_coord_gt.append([int(x_min) / image_w, int(y_min) / image_h, \
-                                   int(x_min + w) / image_w, int(y_min + h) / image_h, angle])
+            boxes_coord_gt.append(
+                [
+                    int(x_min) / image_w,
+                    int(y_min) / image_h,
+                    int(x_min + w) / image_w,
+                    int(y_min + h) / image_h,
+                    angle,
+                ]
+            )
         boxes_coord_gt = np.array(boxes_coord_gt)
 
-        overlaps = _bbox_overlaps(np.ascontiguousarray(bbox_coord_pr[:, :4], dtype=np.float32),
-                                  np.ascontiguousarray(boxes_coord_gt[:, :4], dtype=np.float32),
-                                  bbox_coord_pr[:, -1], boxes_coord_gt[:, -1],
-                                  image_w, image_h)
+        overlaps = _bbox_overlaps(
+            np.ascontiguousarray(bbox_coord_pr[:, :4], dtype=np.float32),
+            np.ascontiguousarray(boxes_coord_gt[:, :4], dtype=np.float32),
+            bbox_coord_pr[:, -1],
+            boxes_coord_gt[:, -1],
+            image_w,
+            image_h,
+        )
 
         flag_exit = 0
         best_overlap = 0.0
@@ -383,27 +455,37 @@ def prefetch_test(opt):
                 if value_overlap > 0.25 and angle_diff < np.pi / 6:
                     bbox_pr_cor = bboxes_pr[i]
 
-                    result['image_id'] = image_id
-                    result['tl_x'] = bbox_pr_cor[0]
-                    result['tl_y'] = bbox_pr_cor[1]
-                    result['bl_x'] = bbox_pr_cor[2]
-                    result['bl_y'] = bbox_pr_cor[3]
-                    result['br_x'] = bbox_pr_cor[4]
-                    result['br_y'] = bbox_pr_cor[5]
-                    result['tl_highest_x'] = bbox_pr_highest[0][0]
-                    result['tl_highest_y'] = bbox_pr_highest[0][1]
-                    result['bl_highest_x'] = bbox_pr_highest[0][2]
-                    result['bl_highest_y'] = bbox_pr_highest[0][3]
-                    result['br_highest_x'] = bbox_pr_highest[0][4]
-                    result['br_highest_y'] = bbox_pr_highest[0][5]
-                    result['tl_score'] = bbox_pr_cor[7]
-                    result['bl_score'] = bbox_pr_cor[8]
-                    result['br_score'] = bbox_pr_cor[9]
-                    result['ct_score'] = bbox_pr_cor[6]*4-bbox_pr_cor[7]-bbox_pr_cor[8]-bbox_pr_cor[9]
-                    result['tl_highest_score'] = bbox_pr_highest[0][7]
-                    result['bl_highest_score'] = bbox_pr_highest[0][8]
-                    result['br_highest_score'] = bbox_pr_highest[0][9]
-                    result['ct_highest_score'] = bbox_pr_highest[0][6] * 4 - bbox_pr_highest[0][7] - bbox_pr_highest[0][8] - bbox_pr_highest[0][9]
+                    result["image_id"] = image_id
+                    result["tl_x"] = bbox_pr_cor[0]
+                    result["tl_y"] = bbox_pr_cor[1]
+                    result["bl_x"] = bbox_pr_cor[2]
+                    result["bl_y"] = bbox_pr_cor[3]
+                    result["br_x"] = bbox_pr_cor[4]
+                    result["br_y"] = bbox_pr_cor[5]
+                    result["tl_highest_x"] = bbox_pr_highest[0][0]
+                    result["tl_highest_y"] = bbox_pr_highest[0][1]
+                    result["bl_highest_x"] = bbox_pr_highest[0][2]
+                    result["bl_highest_y"] = bbox_pr_highest[0][3]
+                    result["br_highest_x"] = bbox_pr_highest[0][4]
+                    result["br_highest_y"] = bbox_pr_highest[0][5]
+                    result["tl_score"] = bbox_pr_cor[7]
+                    result["bl_score"] = bbox_pr_cor[8]
+                    result["br_score"] = bbox_pr_cor[9]
+                    result["ct_score"] = (
+                        bbox_pr_cor[6] * 4
+                        - bbox_pr_cor[7]
+                        - bbox_pr_cor[8]
+                        - bbox_pr_cor[9]
+                    )
+                    result["tl_highest_score"] = bbox_pr_highest[0][7]
+                    result["bl_highest_score"] = bbox_pr_highest[0][8]
+                    result["br_highest_score"] = bbox_pr_highest[0][9]
+                    result["ct_highest_score"] = (
+                        bbox_pr_highest[0][6] * 4
+                        - bbox_pr_highest[0][7]
+                        - bbox_pr_highest[0][8]
+                        - bbox_pr_highest[0][9]
+                    )
 
                     fail_cases.append(result)
                     nm_suc_case += 1
@@ -414,42 +496,93 @@ def prefetch_test(opt):
                 break
         print(flag_exit)
         if not flag_exit:
-            result['image_id'] = image_id
-            result['tl_x'] = closet_bbox_pr[0]
-            result['tl_y'] = closet_bbox_pr[1]
-            result['bl_x'] = closet_bbox_pr[2]
-            result['bl_y'] = closet_bbox_pr[3]
-            result['br_x'] = closet_bbox_pr[4]
-            result['br_y'] = closet_bbox_pr[5]
-            result['tl_highest_x'] = bbox_pr_highest[0][0]
-            result['tl_highest_y'] = bbox_pr_highest[0][1]
-            result['bl_highest_x'] = bbox_pr_highest[0][2]
-            result['bl_highest_y'] = bbox_pr_highest[0][3]
-            result['br_highest_x'] = bbox_pr_highest[0][4]
-            result['br_highest_y'] = bbox_pr_highest[0][5]
-            result['tl_score'] = closet_bbox_pr[7]
-            result['bl_score'] = closet_bbox_pr[8]
-            result['br_score'] = closet_bbox_pr[9]
-            result['ct_score'] = closet_bbox_pr[6] * 4 - bbox_pr_cor[7] - bbox_pr_cor[8] - bbox_pr_cor[9]
-            result['tl_highest_score'] = bbox_pr_highest[0][7]
-            result['bl_highest_score'] = bbox_pr_highest[0][8]
-            result['br_highest_score'] = bbox_pr_highest[0][9]
-            result['ct_highest_score'] = bbox_pr_highest[0][6] * 4 - bbox_pr_highest[0][7] - bbox_pr_highest[0][8] - \
-                                         bbox_pr_highest[0][9]
+            result["image_id"] = image_id
+            result["tl_x"] = closet_bbox_pr[0]
+            result["tl_y"] = closet_bbox_pr[1]
+            result["bl_x"] = closet_bbox_pr[2]
+            result["bl_y"] = closet_bbox_pr[3]
+            result["br_x"] = closet_bbox_pr[4]
+            result["br_y"] = closet_bbox_pr[5]
+            result["tl_highest_x"] = bbox_pr_highest[0][0]
+            result["tl_highest_y"] = bbox_pr_highest[0][1]
+            result["bl_highest_x"] = bbox_pr_highest[0][2]
+            result["bl_highest_y"] = bbox_pr_highest[0][3]
+            result["br_highest_x"] = bbox_pr_highest[0][4]
+            result["br_highest_y"] = bbox_pr_highest[0][5]
+            result["tl_score"] = closet_bbox_pr[7]
+            result["bl_score"] = closet_bbox_pr[8]
+            result["br_score"] = closet_bbox_pr[9]
+            result["ct_score"] = (
+                closet_bbox_pr[6] * 4 - bbox_pr_cor[7] - bbox_pr_cor[8] - bbox_pr_cor[9]
+            )
+            result["tl_highest_score"] = bbox_pr_highest[0][7]
+            result["bl_highest_score"] = bbox_pr_highest[0][8]
+            result["br_highest_score"] = bbox_pr_highest[0][9]
+            result["ct_highest_score"] = (
+                bbox_pr_highest[0][6] * 4
+                - bbox_pr_highest[0][7]
+                - bbox_pr_highest[0][8]
+                - bbox_pr_highest[0][9]
+            )
 
             fail_cases.append(result)
         bar.next()
 
     bar.finish()
 
-    file = open('/home/ruinianxu/IVA_Lab/Project/TripleNet/exp/trictdet/tri_dla_jac_coco_36_correctized/debug/fail_case_ana_2.txt', 'w+')
+    file = open(
+        "/home/ruinianxu/IVA_Lab/Project/TripleNet/exp/trictdet/tri_dla_jac_coco_36_correctized/debug/fail_case_ana_2.txt",
+        "w+",
+    )
     for result in fail_cases:
-        file.write(str(result['image_id']) + ' ' + str(result['tl_x']) + ' ' + str(result['tl_y']) + ' '+ str(result['bl_x']) + ' '+ str(result['bl_y']) + ' ' +str(result['br_x']) + ' '+ str(result['br_y']) + ' ' +
-                   str(result['tl_highest_x']) + ' ' + str(result['tl_highest_y']) + ' ' + str(result['bl_highest_x']) + ' ' + str(result['bl_highest_y']) + ' ' + str(result['br_highest_x']) + ' ' + str(result['br_highest_y']) + ' ' +
-                   str(result['tl_score']) + ' ' + str(result['bl_score']) + ' ' + str(result['br_score']) + ' ' + str(result['ct_score']) + ' ' +
-                   str(result['tl_highest_score']) + ' ' + str(result['bl_highest_score']) + ' ' + str(result['br_highest_score']) + ' ' + str(result['ct_highest_score']) + ' ' + '\n')
+        file.write(
+            str(result["image_id"])
+            + " "
+            + str(result["tl_x"])
+            + " "
+            + str(result["tl_y"])
+            + " "
+            + str(result["bl_x"])
+            + " "
+            + str(result["bl_y"])
+            + " "
+            + str(result["br_x"])
+            + " "
+            + str(result["br_y"])
+            + " "
+            + str(result["tl_highest_x"])
+            + " "
+            + str(result["tl_highest_y"])
+            + " "
+            + str(result["bl_highest_x"])
+            + " "
+            + str(result["bl_highest_y"])
+            + " "
+            + str(result["br_highest_x"])
+            + " "
+            + str(result["br_highest_y"])
+            + " "
+            + str(result["tl_score"])
+            + " "
+            + str(result["bl_score"])
+            + " "
+            + str(result["br_score"])
+            + " "
+            + str(result["ct_score"])
+            + " "
+            + str(result["tl_highest_score"])
+            + " "
+            + str(result["bl_highest_score"])
+            + " "
+            + str(result["br_highest_score"])
+            + " "
+            + str(result["ct_highest_score"])
+            + " "
+            + "\n"
+        )
     file.close()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     opt = opts().parse()
     prefetch_test(opt)

@@ -1,10 +1,2 @@
-torch
-torchvision
-opencv-python
+-e file:./
 Cython
-numba
-progress
-matplotlib
-easydict
-scipy
-shapely
