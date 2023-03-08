@@ -1,10 +1,5 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import os
-import sys
 import numpy as np
 
 class opts(object):
@@ -253,7 +248,7 @@ class opts(object):
       opt.chunk_sizes.append(slave_chunk_size)
     print('training chunk_sizes:', opt.chunk_sizes)
 
-    opt.root_dir = os.path.join(os.path.dirname(__file__), '..', '..')
+    opt.root_dir = os.path.join(os.path.dirname(__file__), '..')
     # opt.data_dir = os.path.join(opt.root_dir, 'data')
     opt.data_dir = opt.dataset_dir
     opt.exp_dir = os.path.join(opt.root_dir, 'exp', opt.task)

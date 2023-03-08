@@ -73,7 +73,7 @@ After install Anaconda:
 6. [Optional, only required if you are using extremenet or multi-scale testing] Compile NMS if your want to use multi-scale testing or test ExtremeNet.
 
    ```
-   cd $CenterNet_ROOT/src/lib/external
+   cd $GKNet_ROOT/vendor/nms
    make
    ```
 

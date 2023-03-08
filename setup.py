@@ -15,4 +15,5 @@ setuptools.setup(
         "shapely",
         "numba",
     ],
+    extras_require={"nms": ["cython"]},
 )

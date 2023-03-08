@@ -88,13 +88,13 @@ Download models [ctdet_coco_dla_2x](https://www.dropbox.com/sh/eicrmhhay2wi8fy/A
 For training the Cornell Dataset:
 
 ```bash
-python main.py dbmctdet_cornell \
+python scripts/train.py dbmctdet_cornell \
   --exp_id dla34 \
   --batch_size 4 \
   --lr 1.25e-4 \
   --arch dla_34 \
   --dataset cornell \
-  --load_model ../models/ctdet_coco_dla_2x.pth \
+  --load_model models/ctdet_coco_dla_2x.pth \
   --num_epochs 15 \
   --val_intervals 1 \
   --save_all \
@@ -104,13 +104,13 @@ python main.py dbmctdet_cornell \
 For training AJD:
 
 ```bash
-python main.py dbmctdet \
+python scripts/train.py dbmctdet \
   --exp_id dla34 \
   --batch_size 4 \
   --lr 1.25e-4 \
   --arch dla_34 \
   --dataset jac_coco_36 \
-  --load_model ../models/ctdet_coco_dla_2x.pth \
+  --load_model models/ctdet_coco_dla_2x.pth \
   --num_epochs 30 \
   --val_intervals 1 \
   --save_all
@@ -123,33 +123,33 @@ You can evaluate your own trained models or download [pretrained models](https:/
 For evaluating the Cornell Dataset:
 
 ```
-python test.py dbmctdet_cornell \
+python scripts/test.py dbmctdet_cornell \
   --exp_id dla34_test \
   --arch dla_34 \
   --dataset cornell \
   --fix_res \
   --flag_test \
-  --load_model ../models/model_dla34_cornell.pth \
+  --load_model models/model_dla34_cornell.pth \
   --ae_threshold 1.0 \
   --ori_threshold 0.24 \
   --center_threshold 0.05 \
-  --dataset_dir ../datasets
+  --dataset_dir datasets
 ```
 
 For evaluating AJD:
 
 ```bash
-python test.py dbmctdet \
+python scripts/test.py dbmctdet \
   --exp_id dla34_test \
   --arch dla_34 \
   --dataset jac_coco_36 \
   --fix_res \
   --flag_test \
-  --load_model ../models/model_dla34_ajd.pth \
+  --load_model models/model_dla34_ajd.pth \
   --ae_threshold 0.65 \
   --ori_threshold 0.1745 \
   --center_threshold 0.15 \
-  --dataset_dir ../datasets
+  --dataset_dir datasets
 ```
 
 ## Develop
