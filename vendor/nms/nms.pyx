@@ -13,7 +13,9 @@
 # ----------------------------------------------------------
 
 import numpy as np
+
 cimport numpy as np
+
 
 cdef inline np.float32_t max(np.float32_t a, np.float32_t b):
     return a if a >= b else b
@@ -101,7 +103,7 @@ def soft_nms(np.ndarray[float, ndim=2] boxes, float sigma=0.5, float Nt=0.3, flo
                 maxpos = pos
             pos = pos + 1
 
-        # add max box as a detection 
+        # add max box as a detection
         boxes[i,0] = boxes[maxpos,0]
         boxes[i,1] = boxes[maxpos,1]
         boxes[i,2] = boxes[maxpos,2]
@@ -139,20 +141,20 @@ def soft_nms(np.ndarray[float, ndim=2] boxes, float sigma=0.5, float Nt=0.3, flo
                     ov = iw * ih / ua #iou between max box and detection box
 
                     if method == 1: # linear
-                        if ov > Nt: 
+                        if ov > Nt:
                             weight = 1 - ov
                         else:
                             weight = 1
                     elif method == 2: # gaussian
                         weight = np.exp(-(ov * ov)/sigma)
                     else: # original NMS
-                        if ov > Nt: 
+                        if ov > Nt:
                             weight = 0
                         else:
                             weight = 1
 
                     boxes[pos, 4] = weight*boxes[pos, 4]
-                                
+
                     # if box score falls below threshold, discard the box by swapping with last box
                     # update N
                     if boxes[pos, 4] < threshold:
@@ -197,7 +199,7 @@ def soft_nms_39(np.ndarray[float, ndim=2] boxes, float sigma=0.5, float Nt=0.3, 
                 maxpos = pos
             pos = pos + 1
 
-        # add max box as a detection 
+        # add max box as a detection
         boxes[i,0] = boxes[maxpos,0]
         boxes[i,1] = boxes[maxpos,1]
         boxes[i,2] = boxes[maxpos,2]
@@ -240,20 +242,20 @@ def soft_nms_39(np.ndarray[float, ndim=2] boxes, float sigma=0.5, float Nt=0.3, 
                     ov = iw * ih / ua #iou between max box and detection box
 
                     if method == 1: # linear
-                        if ov > Nt: 
+                        if ov > Nt:
                             weight = 1 - ov
                         else:
                             weight = 1
                     elif method == 2: # gaussian
                         weight = np.exp(-(ov * ov)/sigma)
                     else: # original NMS
-                        if ov > Nt: 
+                        if ov > Nt:
                             weight = 0
                         else:
                             weight = 1
 
                     boxes[pos, 4] = weight*boxes[pos, 4]
-                                
+
                     # if box score falls below threshold, discard the box by swapping with last box
                     # update N
                     if boxes[pos, 4] < threshold:
@@ -302,7 +304,7 @@ def soft_nms_merge(np.ndarray[float, ndim=2] boxes, float sigma=0.5, float Nt=0.
                 maxpos = pos
             pos = pos + 1
 
-        # add max box as a detection 
+        # add max box as a detection
         boxes[i,0] = boxes[maxpos,0]
         boxes[i,1] = boxes[maxpos,1]
         boxes[i,2] = boxes[maxpos,2]
@@ -347,14 +349,14 @@ def soft_nms_merge(np.ndarray[float, ndim=2] boxes, float sigma=0.5, float Nt=0.
                     ov = iw * ih / ua #iou between max box and detection box
 
                     if method == 1: # linear
-                        if ov > Nt: 
+                        if ov > Nt:
                             weight = 1 - ov
                         else:
                             weight = 1
                     elif method == 2: # gaussian
                         weight = np.exp(-(ov * ov)/sigma)
                     else: # original NMS
-                        if ov > Nt: 
+                        if ov > Nt:
                             weight = 0
                         else:
                             weight = 1
@@ -368,7 +370,7 @@ def soft_nms_merge(np.ndarray[float, ndim=2] boxes, float sigma=0.5, float Nt=0.
                     mbs = mbs + boxes[pos, 6] * mw
 
                     boxes[pos, 4] = weight*boxes[pos, 4]
-                                
+
                     # if box score falls below threshold, discard the box by swapping with last box
                     # update N
                     if boxes[pos, 4] < threshold:

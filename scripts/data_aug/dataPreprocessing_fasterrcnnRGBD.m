@@ -1,15 +1,15 @@
 function [imagesOut imagesOut_depth bbsOut] = dataPreprocessingRGBD( imageIn, imageIn_depth, bbsIn_all, cropSize, translationShiftNumber, roatateAngleNumber)
-% dataPreprocessing function perfroms
+% dataPreprocessing function performs
 % 1) croping
 % 2) padding
 % 3) rotatation
 % 4) shifting
 %
-% for a input image with a bbs as 4 points, 
+% for a input image with a bbs as 4 points,
 % dataPreprocessing outputs a set of images with corresponding bbs.
 %
 %
-% Inputs: 
+% Inputs:
 %   imageIn: input image (480 by 640 by 3)
 %   bbsIn: bounding box (2 by 4)
 %   cropSize: output image size
@@ -34,8 +34,8 @@ end
 
 %% crop image and padding image
 % cropping to 321 by 321 from center
-imgCrop = imcrop(imageIn, [145 65 351 351]); 
-imgCrop_depth = imcrop(imageIn_depth, [145 65 351 351]); 
+imgCrop = imcrop(imageIn, [145 65 351 351]);
+imgCrop_depth = imcrop(imageIn_depth, [145 65 351 351]);
 
 % padding to 501 by 501
 imgPadding = padarray(imgCrop, [75 75], 'replicate', 'both');
@@ -61,7 +61,7 @@ for i_rotate = 1:roatateAngleNumber*translationShiftNumber*translationShiftNumbe
     if(debug_dev)figure(2); imshow(imgRotate);end
     imgCropRotate = imcrop(imgRotate, [size(imgRotate,1)/2-160-dx size(imgRotate,1)/2-160-dy 320 320]);
     imgCropRotate_depth = imcrop(imgRotate_depth, [size(imgRotate_depth,1)/2-160-dx size(imgRotate_depth,1)/2-160-dy 320 320]);
-    if(debug_dev)figure(3); imshow(imgCropRotate);end 
+    if(debug_dev)figure(3); imshow(imgCropRotate);end
     imgResize = imresize(imgCropRotate, [cropSize cropSize]);
     imgResize_depth = imresize(imgCropRotate_depth, [cropSize cropSize]);
     if(debug)figure(4); imshow(imgResize); hold on;end
@@ -69,12 +69,12 @@ for i_rotate = 1:roatateAngleNumber*translationShiftNumber*translationShiftNumbe
     %% modify bbs
     [m, n] = size(bbsIn_all);
     bbsNum = n/4;
-    
+
     countbbs = 1;
     for idx = 1:bbsNum
-      bbsIn =  bbsIn_all(:,idx*4-3:idx*4); 
+      bbsIn =  bbsIn_all(:,idx*4-3:idx*4);
       if(sum(sum(isnan(bbsIn)))) continue; end
-      
+
       bbsInShift = bbsIn - repmat([320; 240], 1, 4);
       R = [cos(theta/180*pi) -sin(theta/180*pi); sin(theta/180*pi) cos(theta/180*pi)];
       bbsRotated = (bbsInShift'*R)';
@@ -88,12 +88,12 @@ for i_rotate = 1:roatateAngleNumber*translationShiftNumber*translationShiftNumbe
       bbsOut{count}{countbbs} = bbsInShiftBack;
       countbbs = countbbs + 1;
     end
-    
+
     imagesOut{count} = imgResize;
     imagesOut_depth{count} = imgResize_depth;
     count = count +1;
 
-   
+
 end
 
 

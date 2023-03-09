@@ -1,18 +1,17 @@
-import cv2
-import cv2.aruco as aruco
-import numpy as np
 import sys
 
-import rospy
-from std_msgs.msg import Float64MultiArray
-from sensor_msgs.msg import Image, CameraInfo
-from cv_bridge import CvBridge, CvBridgeError
+import cv2
+import cv2.aruco as aruco
 import message_filters
+import numpy as np
+import rospy
+from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs.msg import CameraInfo, Image
+from std_msgs.msg import Float64MultiArray
 
-
-from gknet.opts import opts
 from gknet.datasets.dataset_factory import dataset_factory
 from gknet.detectors.detector_factory import detector_factory
+from gknet.opts import opts
 
 # transformation from the robot base to aruco tag
 M_BL = np.array(

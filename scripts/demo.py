@@ -1,10 +1,11 @@
 import os
-import cv2
-import pyrealsense2 as rs
-import numpy as np
 
-from gknet.opts import opts
+import cv2
+import numpy as np
+import pyrealsense2 as rs
+
 from gknet.detectors.detector_factory import detector_factory
+from gknet.opts import opts
 
 image_ext = ["jpg", "jpeg", "png", "webp"]
 video_ext = ["mp4", "mov", "avi", "mkv"]

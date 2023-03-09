@@ -1,21 +1,18 @@
-
-
-
-
-import torch
 import numpy as np
+import torch
 
-from gknet.models.losses import FocalLoss
 from gknet.models.losses import (
+    FocalLoss,
+    NormRegL1Loss,
     RegL1Loss,
     RegLoss,
-    NormRegL1Loss,
     RegWeightedL1Loss,
     TagLoss_2,
 )
 from gknet.models.utils import _sigmoid
 from gknet.utils.debugger import Debugger
 from gknet.utils.oracle_utils import gen_oracle_map
+
 from .base_trainer import BaseTrainer
 
 

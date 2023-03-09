@@ -1,20 +1,15 @@
-
-
-
-
-import pycocotools.coco as coco
-import numpy as np
-import json
-import os
-from progress.bar import Bar
-import cv2
-import math
 import copy
+import json
+import math
 import os
+
+import cv2
+import numpy as np
+import pycocotools.coco as coco
+import torch.utils.data as data
+from progress.bar import Bar
 
 from gknet.datasets.dataset.utils import _bbox_overlaps, rotate_bbox
-
-import torch.utils.data as data
 
 
 class JAC_COCO_36(data.Dataset):

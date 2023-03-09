@@ -37,9 +37,9 @@ imgDataOutDir = '/media/fujenchu/data/fasterrcnn_grasp/res50_rgbd_grasp_5_5_5_ob
 imgDepthDataOutDir = '/media/fujenchu/data/fasterrcnn_grasp/res50_rgbd_grasp_5_5_5_object_tf/data/ImagesDepth';
 labelSetTrain = '/media/fujenchu/data/fasterrcnn_grasp/res50_rgbd_grasp_5_5_5_object_tf/data/train_label.txt';
 labelSetTest = '/media/fujenchu/data/fasterrcnn_grasp/res50_rgbd_grasp_5_5_5_object_tf/data/test_label.txt';
-imgSetTrain = '/media/fujenchu/data/fasterrcnn_grasp/res50_rgbd_grasp_5_5_5_object_tf/data/train_img.txt'; 
-imgSetTest = '/media/fujenchu/data/fasterrcnn_grasp/res50_rgbd_grasp_5_5_5_object_tf/data/test_img.txt'; 
-imgSetTestfull = '/media/fujenchu/data/fasterrcnn_grasp/res50_rgbd_grasp_5_5_5_object_tf/data/testfull.txt'; 
+imgSetTrain = '/media/fujenchu/data/fasterrcnn_grasp/res50_rgbd_grasp_5_5_5_object_tf/data/train_img.txt';
+imgSetTest = '/media/fujenchu/data/fasterrcnn_grasp/res50_rgbd_grasp_5_5_5_object_tf/data/test_img.txt';
+imgSetTestfull = '/media/fujenchu/data/fasterrcnn_grasp/res50_rgbd_grasp_5_5_5_object_tf/data/testfull.txt';
 
 imgFiles = dir([imgDataDir '/*.png']);
 imgDepthFiles = dir([imgDepthDataDir '/*.png']);
@@ -47,17 +47,17 @@ txtFiles = dir([txtDataDir '/*pos.txt']);
 
 logfileID = fopen('log.txt','a');
 %mainfileID = fopen(['/home/fujenchu/projects/deepLearning/deepGraspExtensiveOffline/data/grasps/scripts/trainttt' sprintf('%02d',folder) '.txt'],'a');
-for idx = 1:length(imgFiles) 
+for idx = 1:length(imgFiles)
     %% display progress
     tic
     display(['processing folder: ' sprintf('%02d',folder) ', imgFiles: ' int2str(idx)])
-    
+
     %% reading data
     imgName = imgFiles(idx).name;
     [pathstr,imgname] = fileparts(imgName);
-    
- 
-    
+
+
+
     rotatePara = 5;
     shitfPara = 5;
     imgSet = imgSetTrain;
@@ -67,14 +67,14 @@ for idx = 1:length(imgFiles)
         file_writeID = fopen(imgSetTestfull,'a');
         fprintf(file_writeID, '%s\n', [imgDataDir '_Cropped320_rgd/' imgname '_rgd_preprocessed_1.png' ] );
         fclose(file_writeID);
-        
+
         rotatePara = 1;
         shitfPara = 1;
         imgSet = imgSetTest;
         labelSet = labelSetTest;
     end
-    
-    
+
+
     txtName = txtFiles(idx).name;
     [pathstr,txtname] = fileparts(txtName);
 
@@ -85,46 +85,46 @@ for idx = 1:length(imgFiles)
     sizeA = [2 100];
     bbsIn_all = fscanf(fileID, '%f %f', sizeA);
     fclose(fileID);
-    
+
     %% data pre-processing
     [imagesOut_depth bbsOut] = dataPreprocessing_fasterrcnnD(img, imgDepth, bbsIn_all, 224, rotatePara, shitfPara);
-    
+
     % for each augmented image
     labelfile_writeID = fopen(labelSet,'a');
     imgfile_writeID = fopen(imgSet,'a');
     for i = 1:1:size(imagesOut_depth,2)
-        
+
         % for each bbs
         printCount = 0;
         if size(bbsOut{i},2) == 0
             continue
         end
         for ibbs = 1:1:size(bbsOut{i},2)
-          A = bbsOut{i}{ibbs};  
+          A = bbsOut{i}{ibbs};
           xy_ctr = sum(A,2)/4; x_ctr = xy_ctr(1); y_ctr = xy_ctr(2);
           width = sqrt(sum((A(:,1) - A(:,2)).^2)); height = sqrt(sum((A(:,2) - A(:,3)).^2));
           if(A(1,1) > A(1,2))
               theta = atan((A(2,2)-A(2,1))/(A(1,1)-A(1,2)));
           else
               theta = atan((A(2,1)-A(2,2))/(A(1,2)-A(1,1))); % note y is facing down
-          end  
-    
+          end
+
           % process to fasterrcnn
           x_min = x_ctr - width/2; x_max = x_ctr + width/2;
           y_min = y_ctr - height/2; y_max = y_ctr + height/2;
           %if(x_min < 0 || y_min < 0 || x_max > 227 || y_max > 227) display('yoooooooo'); end
           if((x_min < 0 && x_max < 0) || (y_min > 224 && y_max > 224) || (x_min > 224 && x_max > 224) || (y_min < 0 && y_max < 0)) display('xxxxxxxxx'); continue; end
           cls = round((theta/pi*180+90)/10) + 1;
-          
+
           % write as lefttop rightdown, Xmin Ymin Xmax Ymax, ex: 261 109 511 705  (x水平 y垂直)
-          %fprintf(labelfile_writeID, '%d %f %f %f %f\n', cls, x_min, y_min, x_max, y_max );  
-          fprintf(labelfile_writeID, '%d %f %f %f %f\n', cls, x_ctr, y_ctr, width, height); 
+          %fprintf(labelfile_writeID, '%d %f %f %f %f\n', cls, x_min, y_min, x_max, y_max );
+          fprintf(labelfile_writeID, '%d %f %f %f %f\n', cls, x_ctr, y_ctr, width, height);
           fprintf(imgfile_writeID, '%s\n', [imgname '_preprocessed_' int2str(i) '_' int2str(ibbs) '.png'] );
-          %imwrite(imagesOut{i}, [imgDataOutDir '/' imgname '_preprocessed_' int2str(i) '_' int2str(ibbs) '.png']); 
+          %imwrite(imagesOut{i}, [imgDataOutDir '/' imgname '_preprocessed_' int2str(i) '_' int2str(ibbs) '.png']);
           %img_ddd = imagesOut_depth{i};
           %img_ddd(:,:,1) = img_ddd(:,:,3);
           %img_ddd(:,:,2) = img_ddd(:,:,3);
-          imwrite(imagesOut_depth{i}, [imgDepthDataOutDir '/' imgname '_preprocessed_' int2str(i) '_' int2str(ibbs) '.png']); 
+          imwrite(imagesOut_depth{i}, [imgDepthDataOutDir '/' imgname '_preprocessed_' int2str(i) '_' int2str(ibbs) '.png']);
 
           printCount = printCount+1;
         end

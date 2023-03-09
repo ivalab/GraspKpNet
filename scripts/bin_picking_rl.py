@@ -1,16 +1,15 @@
+import sys
+
 import cv2
 import cv2.aruco as aruco
 import numpy as np
 import pyrealsense2 as rs
-import sys
-
 import rospy
-from std_msgs.msg import Bool
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Bool, Float64MultiArray
 
-from gknet.opts import opts
 from gknet.datasets.dataset_factory import dataset_factory
 from gknet.detectors.detector_factory import detector_factory
+from gknet.opts import opts
 
 # transformation from the robot base to aruco tag
 M_BL = np.array(

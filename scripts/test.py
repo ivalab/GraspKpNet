@@ -1,14 +1,15 @@
 import os
+
 import cv2
 import numpy as np
-from progress.bar import Bar
 import torch
+from progress.bar import Bar
 
-from gknet.opts import opts
-from gknet.logger import Logger
-from gknet.utils.utils import AverageMeter
 from gknet.datasets.dataset_factory import dataset_factory
 from gknet.detectors.detector_factory import detector_factory
+from gknet.logger import Logger
+from gknet.opts import opts
+from gknet.utils.utils import AverageMeter
 
 
 class PrefetchDataset(torch.utils.data.Dataset):

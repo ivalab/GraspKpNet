@@ -1,20 +1,17 @@
-
-
-
+import copy
+import math
 
 import cv2
 import numpy as np
-from progress.bar import Bar
 import torch
-import math
-import copy
+from progress.bar import Bar
+
+from gknet.datasets.dataset.utils import _bbox_overlaps
+from gknet.models.decode import _nms, _topk, _topk_channel, _topk_original
+from gknet.models.utils import _gather_feat, _tranpose_and_gather_feat
+from gknet.utils.image import transform_preds
 
 from .base_debugger import BaseDebugger
-
-from gknet.models.utils import _tranpose_and_gather_feat, _gather_feat
-from gknet.models.decode import _topk_original, _topk, _topk_channel, _nms
-from gknet.datasets.dataset.utils import _bbox_overlaps
-from gknet.utils.image import transform_preds
 
 
 class TriCtdetDebugger(BaseDebugger):

@@ -1,10 +1,8 @@
-
-
-
-
 import time
+
 import torch
 from progress.bar import Bar
+
 from gknet.models.data_parallel import DataParallel
 from gknet.utils.utils import AverageMeter
 

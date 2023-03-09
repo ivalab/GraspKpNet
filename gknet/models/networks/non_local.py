@@ -4,12 +4,19 @@ from torch.nn import functional as F
 
 
 class NLBlockND(nn.Module):
-    def __init__(self, in_channels, inter_channels=None, mode='embedded', sub_sample=True,
-                 dimension=3, bn_layer=True):
+    def __init__(
+        self,
+        in_channels,
+        inter_channels=None,
+        mode="embedded",
+        sub_sample=True,
+        dimension=3,
+        bn_layer=True,
+    ):
         """Implementation of Non-Local Block with 4 different pairwise functions but doesn't include subsampling trick
         args:
             in_channels: original channel size (1024 in the paper)
-            inter_channels: channel size inside the block if not specifed reduced to half (512 in the paper)
+            inter_channels: channel size inside the block if not specified reduced to half (512 in the paper)
             mode: supports Gaussian, Embedded Gaussian, Dot Product, and Concatenation
             dimension: can be 1 (temporal), 2 (spatial), 3 (spatiotemporal)
             bn_layer: whether to add batch norm
@@ -18,8 +25,10 @@ class NLBlockND(nn.Module):
 
         assert dimension in [1, 2, 3]
 
-        if mode not in ['gaussian', 'embedded', 'dot', 'concatenate']:
-            raise ValueError('`mode` must be one of `gaussian`, `embedded`, `dot` or `concatenate`')
+        if mode not in ["gaussian", "embedded", "dot", "concatenate"]:
+            raise ValueError(
+                "`mode` must be one of `gaussian`, `embedded`, `dot` or `concatenate`"
+            )
 
         self.mode = mode
         self.dimension = dimension
@@ -48,19 +57,37 @@ class NLBlockND(nn.Module):
             bn = nn.BatchNorm1d
 
         # function g in the paper which goes through conv. with kernel size 1
-        self.g = conv_nd(in_channels=self.in_channels, out_channels=self.inter_channels, kernel_size=1, stride=1, padding=0)
+        self.g = conv_nd(
+            in_channels=self.in_channels,
+            out_channels=self.inter_channels,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+        )
 
         # add BatchNorm layer after the last conv layer
         if bn_layer:
             self.W_z = nn.Sequential(
-                conv_nd(in_channels=self.inter_channels, out_channels=self.in_channels, kernel_size=1, stride=1, padding=0),
-                bn(self.in_channels)
+                conv_nd(
+                    in_channels=self.inter_channels,
+                    out_channels=self.in_channels,
+                    kernel_size=1,
+                    stride=1,
+                    padding=0,
+                ),
+                bn(self.in_channels),
             )
             # from section 4.1 of the paper, initializing params of BN ensures that the initial state of non-local block is identity mapping
             nn.init.constant_(self.W_z[1].weight, 0)
             nn.init.constant_(self.W_z[1].bias, 0)
         else:
-            self.W_z = conv_nd(in_channels=self.inter_channels, out_channels=self.in_channels, kernel_size=1, stride=1, padding=0)
+            self.W_z = conv_nd(
+                in_channels=self.inter_channels,
+                out_channels=self.in_channels,
+                kernel_size=1,
+                stride=1,
+                padding=0,
+            )
 
             # from section 3.3 of the paper by initializing Wz to 0, this block can be inserted to any existing architecture
             nn.init.constant_(self.W_z.weight, 0)
@@ -68,13 +95,27 @@ class NLBlockND(nn.Module):
 
         # define theta and phi for all operations except gaussian
         if self.mode == "embedded" or self.mode == "dot" or self.mode == "concatenate":
-            self.theta = conv_nd(in_channels=self.in_channels, out_channels=self.inter_channels, kernel_size=1, stride=1, padding=0)
-            self.phi = conv_nd(in_channels=self.in_channels, out_channels=self.inter_channels, kernel_size=1, stride=1, padding=0)
+            self.theta = conv_nd(
+                in_channels=self.in_channels,
+                out_channels=self.inter_channels,
+                kernel_size=1,
+                stride=1,
+                padding=0,
+            )
+            self.phi = conv_nd(
+                in_channels=self.in_channels,
+                out_channels=self.inter_channels,
+                kernel_size=1,
+                stride=1,
+                padding=0,
+            )
 
         if self.mode == "concatenate":
             self.W_f = nn.Sequential(
-                nn.Conv2d(in_channels=self.inter_channels * 2, out_channels=1, kernel_size=1),
-                nn.ReLU()
+                nn.Conv2d(
+                    in_channels=self.inter_channels * 2, out_channels=1, kernel_size=1
+                ),
+                nn.ReLU(),
             )
         if sub_sample:
             self.g = nn.Sequential(self.g, max_pool_layer)

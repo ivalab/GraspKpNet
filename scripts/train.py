@@ -2,10 +2,11 @@ import os
 
 import torch
 import torch.utils.data
-from gknet.opts import opts
-from gknet.models.model import create_model, load_model, save_model
-from gknet.logger import Logger
+
 from gknet.datasets.dataset_factory import get_dataset
+from gknet.logger import Logger
+from gknet.models.model import create_model, load_model, save_model
+from gknet.opts import opts
 from gknet.trains.train_factory import train_factory
 
 

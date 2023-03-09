@@ -1,8 +1,9 @@
-import numpy as np
 import time
-import torch
 
+import numpy as np
+import torch
 from nms import soft_nms
+
 from gknet.models.decode import dbmctdet_decode
 from gknet.utils.post_process import dbmctdet_cornell_post_process
 

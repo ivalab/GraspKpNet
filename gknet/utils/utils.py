@@ -1,11 +1,9 @@
-
-
-
-
 import torch
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
+
     def __init__(self):
         self.reset()
 
@@ -20,4 +18,4 @@ class AverageMeter(object):
         self.sum += val * n
         self.count += n
         if self.count > 0:
-          self.avg = self.sum / self.count
+            self.avg = self.sum / self.count

@@ -1,9 +1,7 @@
+from .dataset.cornell import CORNELL
+from .dataset.jac_coco import JAC_COCO_36
 from .sample.dbmctdet import DbMCTDetDataset
 from .sample.dbmctdet_cornell import DbMCTDet_CornellDataset
-
-from .dataset.jac_coco import JAC_COCO_36
-from .dataset.cornell import CORNELL
-
 
 dataset_factory = {
     "jac_coco_36": JAC_COCO_36,

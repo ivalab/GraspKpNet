@@ -1,18 +1,22 @@
+import json
+import math
+import os
 
-
-
-
-import torch.utils.data as data
+import cv2
 import numpy as np
 import torch
-import json
-import cv2
-import os
-from gknet.utils.image import flip, color_aug
-from gknet.utils.image import get_affine_transform, affine_transform
-from gknet.utils.image import gaussian_radius, draw_umich_gaussian, draw_msra_gaussian
-from gknet.utils.image import draw_dense_reg
-import math
+import torch.utils.data as data
+
+from gknet.utils.image import (
+    affine_transform,
+    color_aug,
+    draw_dense_reg,
+    draw_msra_gaussian,
+    draw_umich_gaussian,
+    flip,
+    gaussian_radius,
+    get_affine_transform,
+)
 
 
 class DbMCTDetDataset(data.Dataset):

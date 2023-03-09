@@ -1,18 +1,23 @@
+import math
 import os
+
 import cv2
 import numpy as np
-from progress.bar import Bar
 import torch
-import math
+from progress.bar import Bar
 
-from gknet.opts import opts
-from gknet.logger import Logger
+from gknet.datasets.dataset.utils import _bbox_overlaps
 from gknet.datasets.dataset_factory import dataset_factory
 from gknet.debuggers.debugger_factory import debugger_factory
-
-from gknet.utils.image import get_affine_transform, affine_transform
-from gknet.utils.image import gaussian_radius, draw_umich_gaussian, draw_msra_gaussian
-from gknet.datasets.dataset.utils import _bbox_overlaps
+from gknet.logger import Logger
+from gknet.opts import opts
+from gknet.utils.image import (
+    affine_transform,
+    draw_msra_gaussian,
+    draw_umich_gaussian,
+    gaussian_radius,
+    get_affine_transform,
+)
 
 
 class PrefetchDataset(torch.utils.data.Dataset):
@@ -385,7 +390,6 @@ def prefetch_test(opt):
                 p_y = br_y
                 angle = 0.0
             else:
-
                 # angle
                 angle = math.atan(-(br_y - bl_y) / (br_x - bl_x))
                 # find intersected point
