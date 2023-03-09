@@ -15,7 +15,7 @@ def _ensure_dir(dir):
 
 
 # custom json serializer for numpy types
-class NumpyEncoder(json.JSONEncoder):
+class CustomEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
@@ -42,7 +42,9 @@ class Logger:
             opt_file.write("==> Cmd:\n")
             opt_file.write(str(sys.argv))
             opt_file.write("\n==> Opt:\n")
-            opt_file.write(json.dumps(args, indent=2, sort_keys=True, cls=NumpyEncoder))
+            opt_file.write(
+                json.dumps(args, indent=2, sort_keys=True, cls=CustomEncoder)
+            )
 
         log_dir = f"{opt.save_dir}/logs_{time_str}"
         _ensure_dir(log_dir)
@@ -64,6 +66,12 @@ class Logger:
 
     def write_line(self, txt):
         self.write(txt + "\n")
+
+    def write_json(self, data, stdout=True, **kwargs):
+        json_data = json.dumps(data, cls=CustomEncoder, **kwargs)
+        self.write_line(json_data)
+        if stdout:
+            print(json_data)
 
     def close(self):
         self.log.close()

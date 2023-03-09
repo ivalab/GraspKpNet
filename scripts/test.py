@@ -1,4 +1,3 @@
-import json
 import os
 import time
 
@@ -47,13 +46,12 @@ def test(opt):
 
     Dataset = dataset_factory[opt.dataset]
     opt = opts().update_dataset_info_and_set_heads(opt, Dataset)
-    print(opt)
     logger = Logger(opt)
-    Detector = detector_factory[opt.task]
+    logger.write_json(opt, stdout=True)
 
     split = "test" if not opt.trainval else "test"
     dataset = Dataset(opt, split)
-    detector = Detector(opt)
+    detector = detector_factory[opt.task](opt)
 
     data_loader = torch.utils.data.DataLoader(
         PreprocessDataset(opt, dataset, detector.pre_process),
@@ -84,21 +82,20 @@ def test(opt):
     for k, v in avg_time_stats.items():
         stats[f"{k}_avg"] = v.avg
         stats[f"{k}_sum"] = v.sum
-    logger.write_line(json.dumps(stats))
+    logger.write_json(stats, stdout=True)
 
     if opt.task.split("_")[0] == "dbmctdet":
         start = time.time()
         success, total = dataset.run_eval_db_middle(results)
         end = time.time()
-        logger.write_line(
-            json.dumps(
-                {
-                    "task": opt.task,
-                    "success": success,
-                    "total": total,
-                    "wall_time": end - start,
-                }
-            )
+        logger.write_json(
+            {
+                "task": opt.task,
+                "success": success,
+                "total": total,
+                "wall_time": end - start,
+            },
+            stdout=True,
         )
 
 
