@@ -1,7 +1,5 @@
-import cv2
 import numpy as np
 import torch
-from progress.bar import Bar
 
 from gknet.models.decode import _topk_original
 from gknet.models.utils import _tranpose_and_gather_feat

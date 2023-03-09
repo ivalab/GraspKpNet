@@ -3,7 +3,6 @@ import time
 import cv2
 import numpy as np
 import torch
-from progress.bar import Bar
 
 from gknet.models.model import create_model, load_model
 from gknet.utils.debugger import Debugger

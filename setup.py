@@ -9,6 +9,7 @@ setuptools.setup(
         "torchvision",
         "opencv-python",
         "progress",
+        "tqdm",
         "matplotlib",
         "easydict",
         "scipy",

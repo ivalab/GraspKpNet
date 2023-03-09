@@ -1,17 +1,11 @@
-import copy
-import json
 import math
 import os
 
-import cv2
 import numpy as np
 import torch.utils.data as data
 from progress.bar import Bar
 
-from gknet.datasets.dataset.utils import (
-    _bbox_overlaps_counterclock,
-    rotate_bbox_counterclock,
-)
+from gknet.datasets.dataset.utils import _bbox_overlaps_counterclock
 
 
 class CORNELL(data.Dataset):
@@ -168,47 +162,8 @@ class CORNELL(data.Dataset):
 
         self.max_objs = 32
         self.avg_h = 23.33
-        self.class_name = [
-            "__background__",
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            18,
-        ]
-        self._valid_ids = [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            18,
-        ]
+        self.class_name = ["__background__", *list(range(1, self.num_classes + 1))]
+        self._valid_ids = list(range(1, self.num_classes + 1))
         self.cat_ids = {v: i for i, v in enumerate(self._valid_ids)}  # rx
 
         self.voc_color = [

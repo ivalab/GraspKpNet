@@ -1,15 +1,12 @@
 import copy
 import math
 
-import cv2
 import numpy as np
 import torch
-from progress.bar import Bar
 
 from gknet.datasets.dataset.utils import _bbox_overlaps
-from gknet.models.decode import _nms, _topk, _topk_channel, _topk_original
+from gknet.models.decode import _nms, _topk
 from gknet.models.utils import _gather_feat, _tranpose_and_gather_feat
-from gknet.utils.image import transform_preds
 
 from .base_debugger import BaseDebugger
 

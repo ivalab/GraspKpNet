@@ -1,5 +1,3 @@
-import copy
-
 import numpy as np
 
 from .image import transform_preds

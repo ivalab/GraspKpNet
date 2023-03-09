@@ -3,7 +3,7 @@ import os
 import cv2
 import numpy as np
 import torch
-from progress.bar import Bar
+from progress import Bar
 
 from gknet.datasets.dataset_factory import dataset_factory
 from gknet.detectors.detector_factory import detector_factory
