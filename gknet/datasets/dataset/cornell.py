@@ -3,7 +3,7 @@ import os
 
 import numpy as np
 import torch.utils.data as data
-from progress.bar import Bar
+import tqdm
 
 from gknet.datasets.dataset.utils import _bbox_overlaps_counterclock
 
@@ -217,14 +217,11 @@ class CORNELL(data.Dataset):
     def run_eval_db_middle(self, results):
         dataset_size = len(results)
         nm_suc_case = 0
-        bar = Bar("cornell evaluation", max=dataset_size)
 
         factor = 256.0 / 227.0
-        for ind, (image_id, result) in enumerate(results.items()):
-            Bar.suffix = "[{0}/{1}]|Tot: {total:} |ETA: {eta:} ".format(
-                ind, dataset_size, total=bar.elapsed_td, eta=bar.eta_td
-            )
-
+        for image_id, result in tqdm.tqdm(
+            results.items(), desc="cornell evaluation", total=dataset_size
+        ):
             img_path = image_id.split("\n")[0]
             template_name = img_path
             anno_path = os.path.join(self.annot_path, template_name + ".txt")
@@ -325,11 +322,7 @@ class CORNELL(data.Dataset):
             if self.evaluate(overlaps, bbox_pr, boxes_gt):
                 nm_suc_case += 1
 
-            bar.next()
-
-        bar.finish()
-
-        print("Succ rate is {}".format(nm_suc_case / dataset_size))
+        return nm_suc_case, dataset_size
 
     def evaluate(self, overlaps, bbox_pr, boxes_gt):
         for i in range(overlaps.shape[0]):

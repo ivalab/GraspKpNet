@@ -122,7 +122,7 @@ You can evaluate your own trained models or download [pretrained models](https:/
 
 For evaluating the Cornell Dataset:
 
-```
+```bash
 python scripts/test.py dbmctdet_cornell \
   --exp_id dla34_test \
   --arch dla_34 \

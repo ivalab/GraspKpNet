@@ -1,9 +1,11 @@
+import json
 import os
+import time
 
 import cv2
 import numpy as np
 import torch
-from progress import Bar
+import tqdm
 
 from gknet.datasets.dataset_factory import dataset_factory
 from gknet.detectors.detector_factory import detector_factory
@@ -12,7 +14,7 @@ from gknet.opts import opts
 from gknet.utils.utils import AverageMeter
 
 
-class PrefetchDataset(torch.utils.data.Dataset):
+class PreprocessDataset(torch.utils.data.Dataset):
     def __init__(self, opt, dataset, pre_process_func):
         self.images = dataset.images
         if opt.dataset.split("_")[0] == "jac":
@@ -40,13 +42,13 @@ class PrefetchDataset(torch.utils.data.Dataset):
         return len(self.images)
 
 
-def prefetch_test(opt):
+def test(opt):
     os.environ["CUDA_VISIBLE_DEVICES"] = opt.gpus_str
 
     Dataset = dataset_factory[opt.dataset]
     opt = opts().update_dataset_info_and_set_heads(opt, Dataset)
     print(opt)
-    Logger(opt)
+    logger = Logger(opt)
     Detector = detector_factory[opt.task]
 
     split = "test" if not opt.trainval else "test"
@@ -54,83 +56,52 @@ def prefetch_test(opt):
     detector = Detector(opt)
 
     data_loader = torch.utils.data.DataLoader(
-        PrefetchDataset(opt, dataset, detector.pre_process),
+        PreprocessDataset(opt, dataset, detector.pre_process),
         batch_size=1,
         shuffle=False,
-        num_workers=1,
+        num_workers=opt.num_workers,
         pin_memory=True,
+        prefetch_factor=opt.prefetch_factor,
     )
 
     results = {}
-    num_iters = len(dataset)
-    bar = Bar("{}".format(opt.exp_id), max=num_iters)
     time_stats = ["tot", "load", "pre", "net", "dec", "post", "merge"]
     avg_time_stats = {t: AverageMeter() for t in time_stats}
-    for ind, (img_id, pre_processed_images) in enumerate(data_loader):
+    for img_id, pre_processed_images in tqdm.tqdm(
+        data_loader, desc=opt.exp_id, total=len(dataset)
+    ):
         ret = detector.run(pre_processed_images)
         if opt.dataset.split("_")[0] == "jac":
             results[img_id.numpy().astype(np.int32)[0]] = ret["results"]
         elif opt.dataset.split("_")[0] == "cornell":
             results[img_id[0].split("\n")[0]] = ret["results"]
-        Bar.suffix = "[{0}/{1}]|Tot: {total:} |ETA: {eta:} ".format(
-            ind, num_iters, total=bar.elapsed_td, eta=bar.eta_td
-        )
+
         for t in avg_time_stats:
             avg_time_stats[t].update(ret[t])
-            Bar.suffix = Bar.suffix + "|{} {tm.val:.3f}s ({tm.avg:.3f}s) ".format(
-                t, tm=avg_time_stats[t]
-            )
-        bar.next()
-    bar.finish()
+
+    # compute time stats
+    stats = {}
+    for k, v in avg_time_stats.items():
+        stats[f"{k}_avg"] = v.avg
+        stats[f"{k}_sum"] = v.sum
+    logger.write_line(json.dumps(stats))
 
     if opt.task.split("_")[0] == "dbmctdet":
-        dataset.run_eval_db_middle(results)
-
-
-def test(opt):
-    os.environ["CUDA_VISIBLE_DEVICES"] = opt.gpus_str
-
-    Dataset = dataset_factory[opt.dataset]
-    opt = opts().update_dataset_info_and_set_heads(opt, Dataset)
-    print(opt)
-    Logger(opt)
-    Detector = detector_factory[opt.task]
-
-    split = "val" if not opt.trainval else "test"
-    dataset = Dataset(opt, split)
-    detector = Detector(opt)
-
-    results = {}
-    num_iters = len(dataset)
-    bar = Bar("{}".format(opt.exp_id), max=num_iters)
-    time_stats = ["tot", "load", "pre", "net", "dec", "post", "merge"]
-    avg_time_stats = {t: AverageMeter() for t in time_stats}
-    for ind in range(num_iters):
-        img_id = dataset.images[ind]
-        img_info = dataset.coco.loadImgs(ids=[img_id])[0]
-        img_path = os.path.join(dataset.img_dir, img_info["file_name"])
-
-        if opt.task == "ddd":
-            ret = detector.run(img_path, img_info["calib"])
-        else:
-            ret = detector.run(img_path)
-
-        results[img_id] = ret["results"]
-
-        Bar.suffix = "[{0}/{1}]|Tot: {total:} |ETA: {eta:} ".format(
-            ind, num_iters, total=bar.elapsed_td, eta=bar.eta_td
+        start = time.time()
+        success, total = dataset.run_eval_db_middle(results)
+        end = time.time()
+        logger.write_line(
+            json.dumps(
+                {
+                    "task": opt.task,
+                    "success": success,
+                    "total": total,
+                    "wall_time": end - start,
+                }
+            )
         )
-        for t in avg_time_stats:
-            avg_time_stats[t].update(ret[t])
-            Bar.suffix = Bar.suffix + "|{} {:.3f} ".format(t, avg_time_stats[t].avg)
-        bar.next()
-    bar.finish()
-    dataset.run_eval(results, opt.save_dir)
 
 
 if __name__ == "__main__":
     opt = opts().parse()
-    if opt.not_prefetch_test:
-        test(opt)
-    else:
-        prefetch_test(opt)
+    test(opt)

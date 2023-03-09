@@ -168,6 +168,12 @@ class opts(object):
             action="store_true",
             help="include validation in training and " "test on test set",
         )
+        self.parser.add_argument(
+            "--prefetch_factor",
+            type=int,
+            default=2,
+            help="prefetch factor of dataloader.",
+        )
 
         # test
         self.parser.add_argument(
@@ -235,11 +241,6 @@ class opts(object):
             type=float,
             default=1.0,
             help="threshold for filtering out tl and br with low scores",
-        )
-        self.parser.add_argument(
-            "--not_prefetch_test",
-            action="store_true",
-            help="not use parallal data pre-processing.",
         )
         self.parser.add_argument(
             "--fix_res",

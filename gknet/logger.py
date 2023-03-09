@@ -1,26 +1,32 @@
 # Code referenced from https://gist.github.com/gyglim/1f8dfb1b5c82627ae3efcfbbadb9f514
+import json
 import os
+import shutil
 import sys
 import time
+from pathlib import Path
 
+import numpy as np
 import torch
 
-USE_TENSORBOARD = True
-try:
-    import tensorboardX
 
-    print("Using tensorboardX")
-except:
-    USE_TENSORBOARD = False
+def _ensure_dir(dir):
+    Path(dir).mkdir(parents=True, exist_ok=True)
 
 
-class Logger(object):
+# custom json serializer for numpy types
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
+
+class Logger:
     def __init__(self, opt):
         """Create a summary writer logging to log_dir."""
-        if not os.path.exists(opt.save_dir):
-            os.makedirs(opt.save_dir)
-        if not os.path.exists(opt.debug_dir):
-            os.makedirs(opt.debug_dir)
+        _ensure_dir(opt.save_dir)
+        _ensure_dir(opt.debug_dir)
 
         time_str = time.strftime("%Y-%m-%d-%H-%M")
 
@@ -36,22 +42,13 @@ class Logger(object):
             opt_file.write("==> Cmd:\n")
             opt_file.write(str(sys.argv))
             opt_file.write("\n==> Opt:\n")
-            for k, v in sorted(args.items()):
-                opt_file.write("  %s: %s\n" % (str(k), str(v)))
+            opt_file.write(json.dumps(args, indent=2, sort_keys=True, cls=NumpyEncoder))
 
-        log_dir = opt.save_dir + "/logs_{}".format(time_str)
-        if USE_TENSORBOARD:
-            self.writer = tensorboardX.SummaryWriter(log_dir=log_dir)
-        else:
-            if not os.path.exists(os.path.dirname(log_dir)):
-                os.mkdir(os.path.dirname(log_dir))
-            if not os.path.exists(log_dir):
-                os.mkdir(log_dir)
+        log_dir = f"{opt.save_dir}/logs_{time_str}"
+        _ensure_dir(log_dir)
+        shutil.copyfile(f"{opt.save_dir}/opt.txt", f"{log_dir}/opt.txt")
+
         self.log = open(log_dir + "/log.txt", "w")
-        try:
-            os.system("cp {}/opt.txt {}/".format(opt.save_dir, log_dir))
-        except:
-            pass
         self.start_line = True
 
     def write(self, txt):
@@ -65,10 +62,12 @@ class Logger(object):
             self.start_line = True
             self.log.flush()
 
+    def write_line(self, txt):
+        self.write(txt + "\n")
+
     def close(self):
         self.log.close()
 
     def scalar_summary(self, tag, value, step):
         """Log a scalar variable."""
-        if USE_TENSORBOARD:
-            self.writer.add_scalar(tag, value, step)
+        pass

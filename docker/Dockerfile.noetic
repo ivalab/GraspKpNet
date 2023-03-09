@@ -59,7 +59,13 @@ RUN git clone https://github.com/acmiyaguchi/DCNv2.git && \
     TORCH_CUDA_ARCH_LIST="3.5;5.0;6.0;6.1;7.0;7.5;8.0;8.6+PTX" \
     python setup.py build develop
 
+# install nms
 WORKDIR /app
+
+ADD vendor/ vendor/
+RUN cd vendor/nms && \
+    python setup.py build install
+
 ADD requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 
@@ -67,8 +73,7 @@ RUN pip install -r requirements.txt
 WORKDIR /app
 ADD . /app
 
-RUN cd vendor/nms && \
-    python setup.py build install
+RUN pip install -e .
 
 # setup entrypoint
 COPY ./docker/bin/ros_entrypoint.sh /

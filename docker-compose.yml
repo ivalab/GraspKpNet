@@ -10,6 +10,7 @@ services:
       dockerfile: docker/Dockerfile.noetic
     image: ivalab/graspkpnet:latest
     network_mode: host
+    shm_size: 2gb
     volumes:
       - ./:/app/
       - .cache/torch:/root/.cache/torch

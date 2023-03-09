@@ -1,15 +1,12 @@
-import copy
-import json
 import math
 import os
 
-import cv2
 import numpy as np
 import pycocotools.coco as coco
 import torch.utils.data as data
-from progress.bar import Bar
+import tqdm
 
-from gknet.datasets.dataset.utils import _bbox_overlaps, rotate_bbox
+from gknet.datasets.dataset.utils import _bbox_overlaps
 
 
 class JAC_COCO_36(data.Dataset):
@@ -84,13 +81,10 @@ class JAC_COCO_36(data.Dataset):
     def run_eval_db_middle(self, results):
         dataset_size = len(results)
         nm_suc_case = 0
-        bar = Bar("jacquard evaluation", max=dataset_size)
 
-        for image_id, result in results.items():
-            Bar.suffix = "[{0}/{1}]|Tot: {total:} |ETA: {eta:} ".format(
-                image_id, dataset_size, total=bar.elapsed_td, eta=bar.eta_td
-            )
-
+        for image_id, result in tqdm.tqdm(
+            results.items(), desc="jacquard evaluation", total=dataset_size
+        ):
             # get the associated groundtruth for predicted_bbox
             ann_ids = self.coco.getAnnIds(imgIds=[image_id])
             annotations = self.coco.loadAnns(ids=ann_ids)
@@ -180,11 +174,7 @@ class JAC_COCO_36(data.Dataset):
             if self.evaluate(overlaps, bbox_pr, boxes_gt):
                 nm_suc_case += 1
 
-            bar.next()
-
-        bar.finish()
-
-        print("Succ rate is {}".format(nm_suc_case / dataset_size))
+        return nm_suc_case, dataset_size
 
     def evaluate(self, overlaps, bbox_pr, boxes_gt):
         for i in range(overlaps.shape[0]):

@@ -1,19 +1,15 @@
-import json
 import math
 import os
 
 import cv2
 import numpy as np
-import torch
 import torch.utils.data as data
 
 from gknet.utils.image import (
     affine_transform,
     color_aug,
-    draw_dense_reg,
     draw_msra_gaussian,
     draw_umich_gaussian,
-    flip,
     gaussian_radius,
     get_affine_transform,
 )
