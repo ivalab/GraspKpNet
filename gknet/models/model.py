@@ -40,19 +40,6 @@ def load_model(model, model_path, optimizer=None, resume=False, lr=None, lr_step
         if k.startswith("module") and not k.startswith("module_list"):
             state_dict[k[7:]] = state_dict_[k]
         else:
-            # if k.split('.')[0] == 'non_local':
-            #   terms = k.split('.')
-            #   k_r = None
-            #   for idx, term in enumerate(terms):
-            #     if idx == 0:
-            #       k_r = term
-            #     elif idx == 1:
-            #       pass
-            #     else:
-            #       k_r = k_r + '.' + term
-            #
-            #   state_dict[k_r] = state_dict_[k]
-            # else:
             state_dict[k] = state_dict_[k]
     model_state_dict = model.state_dict()
 

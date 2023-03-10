@@ -132,8 +132,7 @@ python scripts/test.py dbmctdet_cornell \
   --load_model models/model_dla34_cornell.pth \
   --ae_threshold 1.0 \
   --ori_threshold 0.24 \
-  --center_threshold 0.05 \
-  --dataset_dir datasets
+  --center_threshold 0.05
 ```
 
 For evaluating AJD:
@@ -148,8 +147,7 @@ python scripts/test.py dbmctdet \
   --load_model models/model_dla34_ajd.pth \
   --ae_threshold 0.65 \
   --ori_threshold 0.1745 \
-  --center_threshold 0.15 \
-  --dataset_dir datasets
+  --center_threshold 0.15
 ```
 
 ## Develop

@@ -1,7 +1,7 @@
 import time
 
 import torch
-from progress.bar import Bar
+import tqdm
 
 from gknet.models.data_parallel import DataParallel
 from gknet.utils.utils import AverageMeter
@@ -19,7 +19,7 @@ class ModleWithLoss(torch.nn.Module):
         return outputs[-1], loss, loss_stats
 
 
-class BaseTrainer(object):
+class BaseTrainer:
     def __init__(self, opt, model, optimizer=None):
         self.opt = opt
         self.optimizer = optimizer
@@ -51,62 +51,54 @@ class BaseTrainer(object):
 
         opt = self.opt
         results = {}
-        data_time, batch_time = AverageMeter(), AverageMeter()
         avg_loss_stats = {l: AverageMeter() for l in self.loss_stats}
         num_iters = len(data_loader) if opt.num_iters < 0 else opt.num_iters
-        bar = Bar("{}/{}".format(opt.task, opt.exp_id), max=num_iters)
-        end = time.time()
-        for iter_id, batch in enumerate(data_loader):
-            if iter_id >= num_iters:
-                break
-            data_time.update(time.time() - end)
+        start = time.time()
 
-            for k in batch:
-                if k != "meta":
+        with tqdm.tqdm(
+            data_loader, total=num_iters, desc=f"{opt.task}/{opt.exp_id}"
+        ) as batches, tqdm.tqdm(bar_format="{desc}") as loss_bar:
+            for iter_id, batch in enumerate(batches):
+                if iter_id >= num_iters:
+                    break
+
+                for k in batch:
+                    if k == "meta":
+                        continue
                     batch[k] = batch[k].to(device=opt.device, non_blocking=True)
-            output, loss, loss_stats = model_with_loss(batch)
-            loss = loss.mean()
-            if phase == "train":
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
-            batch_time.update(time.time() - end)
-            end = time.time()
 
-            Bar.suffix = "{phase}: [{0}][{1}/{2}]|Tot: {total:} |ETA: {eta:} ".format(
-                epoch,
-                iter_id,
-                num_iters,
-                phase=phase,
-                total=bar.elapsed_td,
-                eta=bar.eta_td,
-            )
-            for l in avg_loss_stats:
-                avg_loss_stats[l].update(
-                    loss_stats[l].mean().item(), batch["input"].size(0)
-                )
-                Bar.suffix = Bar.suffix + "|{} {:.4f} ".format(l, avg_loss_stats[l].avg)
-            if not opt.hide_data_time:
-                Bar.suffix = (
-                    Bar.suffix + "|Data {dt.val:.3f}s({dt.avg:.3f}s) "
-                    "|Net {bt.avg:.3f}s".format(dt=data_time, bt=batch_time)
-                )
-            if opt.print_iter > 0:
-                if iter_id % opt.print_iter == 0:
-                    print("{}/{}| {}".format(opt.task, opt.exp_id, Bar.suffix))
-            else:
-                bar.next()
+                output, loss, loss_stats = model_with_loss(batch)
+                loss = loss.mean()
+                if phase == "train":
+                    self.optimizer.zero_grad()
+                    loss.backward()
+                    self.optimizer.step()
 
-            if opt.debug > 0:
-                self.debug(batch, output, iter_id)
+                for l in avg_loss_stats:
+                    avg_loss_stats[l].update(
+                        loss_stats[l].mean().item(), batch["input"].size(0)
+                    )
 
-            if opt.test:
-                self.save_result(output, batch, results)
-            del output, loss, loss_stats
+                # format the loss description and update the bar, there are a
+                # total of 11 loss terms
+                desc = "|".join([f"{k} {v.avg:.4f}" for k, v in avg_loss_stats.items()])
+                loss_bar.set_description_str(desc, refresh=False)
+                loss_bar.update()
 
-        bar.finish()
+                if opt.print_iter > 0:
+                    if iter_id % opt.print_iter == 0:
+                        print(f"{opt.task}/{opt.exp_id}| {desc}")
+
+                if opt.debug > 0:
+                    self.debug(batch, output, iter_id)
+
+                if opt.test:
+                    self.save_result(output, batch, results)
+                del output, loss, loss_stats
+
         ret = {k: v.avg for k, v in avg_loss_stats.items()}
-        ret["time"] = bar.elapsed_td.total_seconds() / 60.0
+        end = time.time()
+        ret["time"] = (end - start) / 60.0
         return ret, results
 
     def debug(self, batch, output, iter_id):

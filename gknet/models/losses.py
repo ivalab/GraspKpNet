@@ -74,9 +74,9 @@ def _ae_loss_2(tag0, tag1, mask):
     tag_mean = (tag0 + tag1) / 2
 
     tag0 = torch.pow(tag0 - tag_mean, 2) / (num + 1e-4)
-    tag0 = tag0[mask].sum()
+    tag0 = tag0[mask.bool()].sum()
     tag1 = torch.pow(tag1 - tag_mean, 2) / (num + 1e-4)
-    tag1 = tag1[mask].sum()
+    tag1 = tag1[mask.bool()].sum()
     pull = tag0 + tag1
 
     mask = mask.unsqueeze(1) + mask.unsqueeze(2)

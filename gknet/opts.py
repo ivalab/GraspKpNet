@@ -16,7 +16,7 @@ class opts(object):
         )
         self.parser.add_argument(
             "--dataset_dir",
-            default="./Dataset",
+            default="./datasets",
             help="root directory of the folder which stores all dataset, not specific one",
         )
         self.parser.add_argument("--exp_id", default="default")
@@ -73,11 +73,6 @@ class opts(object):
             type=int,
             default=0,
             help="disable progress bar and print to screen.",
-        )
-        self.parser.add_argument(
-            "--hide_data_time",
-            action="store_true",
-            help="not display time during training.",
         )
         self.parser.add_argument(
             "--save_all", action="store_true", help="save model to disk every 5 epochs."
