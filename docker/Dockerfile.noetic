@@ -37,16 +37,6 @@ RUN git clone https://github.com/cocodataset/cocoapi.git && \
     make && \
     python setup.py install
 
-# We first try building the DCNv2 module via the
-# #0 8.181 ModuleNotFoundError: No module named 'torch.utils.ffi'
-# https://github.com/pytorch/pytorch/issues/15645
-# WORKDIR /opt/DCNv2
-# ADD src/lib/models/networks/DCNv2 ./
-# RUN bash make.sh
-
-# And the upstream package doesn't work either
-# RUN pip install DCNv2
-
 WORKDIR /opt
 # fork of https://github.com/lbin/DCNv2.git with ability to compile with cuda
 # without an nvidia gpu attached
@@ -61,7 +51,6 @@ RUN git clone https://github.com/acmiyaguchi/DCNv2.git && \
 
 # install nms
 WORKDIR /app
-
 ADD vendor/ vendor/
 RUN cd vendor/nms && \
     python setup.py build install
@@ -79,9 +68,3 @@ RUN pip install -e .
 COPY ./docker/bin/ros_entrypoint.sh /
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["bash"]
-
-# TODO: second stage build to reduce the size of the image
-# FROM nvidia/cuda:11.7.0-runtime-ubuntu20.04
-# # https://stackoverflow.com/questions/70997674/docker-image-multistage-build-how-to-create-a-docker-image-copying-only-python
-# COPY --from=cuda-builder /usr/local/lib/python3.8/dist-packages /usr/local/lib/python3.8/dist-packages
-# COPY --from=cuda-builder /opt/DCNv2 /opt/DCNv2
