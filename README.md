@@ -1,6 +1,6 @@
 # GKNet: Grasp Keypoint Network for Grasp Candidates Detection
 
-![fig_ill_mul_resized](./demo/fig_ill_mul_resized.png)
+![fig_ill_mul_resized](./docs/demo/fig_ill_mul_resized.png)
 
 > **GKNet: grasp keypoint network for Grasp Candidates Detection** <br>
 > Ruinian Xu, Fu-Jen Chu and Patricio A. Vela
