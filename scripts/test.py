@@ -47,7 +47,10 @@ def test(opt):
     Dataset = dataset_factory[opt.dataset]
     opt = opts().update_dataset_info_and_set_heads(opt, Dataset)
     logger = Logger(opt)
-    logger.write_json(opt, stdout=True)
+    logger.write_json(
+        {k: v for k, v in vars(opt).items() if not k.startswith("_")},
+        stdout=True,
+    )
 
     split = "test" if not opt.trainval else "test"
     dataset = Dataset(opt, split)

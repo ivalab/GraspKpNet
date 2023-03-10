@@ -30,9 +30,8 @@ class Logger:
 
         time_str = time.strftime("%Y-%m-%d-%H-%M")
 
-        args = dict(
-            (name, getattr(opt, name)) for name in dir(opt) if not name.startswith("_")
-        )
+        args = {k: v for k, v in vars(opt).items() if not k.startswith("_")}
+
         file_name = os.path.join(opt.save_dir, "opt.txt")
         with open(file_name, "wt") as opt_file:
             opt_file.write("==> torch version: {}\n".format(torch.__version__))

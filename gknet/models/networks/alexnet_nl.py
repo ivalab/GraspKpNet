@@ -101,7 +101,7 @@ class PoseAlexNet(nn.Module):
                 )
             self.__setattr__(head, fc)
 
-        self.init_weights(num_layers)
+        self.init_weights()
 
     def _get_deconv_cfg(self, deconv_kernel, index):
         if deconv_kernel == 6:
