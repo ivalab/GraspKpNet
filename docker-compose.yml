@@ -8,7 +8,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.noetic
-    image: ivalab/graspkpnet:latest
+    image: ivalab/gknet:latest
     network_mode: host
     shm_size: 2gb
     volumes:
