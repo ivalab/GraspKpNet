@@ -25,7 +25,7 @@ This means that any changes you make to the code on your host machine will be re
 
 ## Manual Installation
 
-The code was tested on Ubuntu 20.04 using Python 3.8 and [PyTorch](http://pytorch.org) v1.3.1.
+The code was tested on Ubuntu 20.04 using Python 3.8 and [PyTorch](http://pytorch.org) v1.13.1.
 NVIDIA GPUs are needed for both training and testing.
 Reference the [Dockerfile](../docker/Dockerfile.noetic) for build instructions and dependencies.
 
@@ -36,7 +36,7 @@ Reference the [Dockerfile](../docker/Dockerfile.noetic) for build instructions a
    source venv/bin/activate
    ```
 
-1. Install pytorch 1.3.1 with CUDA 11.7
+1. Install pytorch 1.13.1 with CUDA 11.7
 
    ```python
    pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/cu117
