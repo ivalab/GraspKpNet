@@ -98,11 +98,11 @@ class DbMCtdetDetector_Cornell(BaseDetector):
         for i in range(1):
             img = images[i].detach().cpu().numpy().transpose(1, 2, 0)
             img = ((img * self.std + self.mean) * 255).astype(np.uint8)
-            pred = debugger.gen_colormap(output["hm"][i].detach().cpu().numpy())
-            debugger.add_blend_img(img, pred, "pred_hm_{:.1f}".format(scale))
+            pred = debugger.gen_colormap(output["lm"][i].detach().cpu().numpy())
+            debugger.add_blend_img(img, pred, "pred_lm_{:.1f}".format(scale))
             debugger.add_img(img, img_id="out_pred_{:.1f}".format(scale))
             for k in range(len(dets[i])):
-                if detection[i, k, 4] > self.opt.center_thresh:
+                if detection[i, k, 4] > self.opt.center_threshold:
                     debugger.add_coco_bbox(
                         detection[i, k, :4],
                         detection[i, k, -1],
@@ -116,4 +116,5 @@ class DbMCtdetDetector_Cornell(BaseDetector):
             for bbox in results[j]:
                 if bbox[4] > self.opt.vis_thresh:
                     debugger.add_coco_bbox(bbox[:4], j - 1, bbox[4], img_id="ctdet")
-        debugger.show_all_imgs(pause=self.pause)
+        # debugger.show_all_imgs(pause=self.pause)
+        debugger.save_all_imgs("data/test_sim_out")
