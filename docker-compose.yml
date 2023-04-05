@@ -1,0 +1,25 @@
+# Launch a ros master with the controller manager and associated services
+version: "3.8"
+
+services:
+  # base container -- will simply exit once brought up
+  # we can run commands via this container for running experiments, etc.
+  base: &base
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.noetic
+    image: ivalab/gknet:latest
+    network_mode: host
+    shm_size: 2gb
+    volumes:
+      - ./:/app/
+      - .cache/torch:/root/.cache/torch
+  gpu:
+    <<: *base
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
