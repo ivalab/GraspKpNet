@@ -25,8 +25,7 @@ RUN apt-get update && \
     ninja-build \
     libgl1-mesa-glx
 
-RUN pip install --upgrade pip wheel cython && \
-    pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/cu117
+RUN pip install --upgrade pip wheel cython
 
 # install cocoapi
 WORKDIR /opt
@@ -37,6 +36,17 @@ RUN git clone https://github.com/cocodataset/cocoapi.git && \
     make && \
     python setup.py install
 
+# install nms
+WORKDIR /app
+ADD vendor/ vendor/
+RUN cd vendor/nms && \
+    python setup.py build install
+
+# install requirements (most importantly pytorch) and DCNv2
+ADD requirements.txt /app/requirements.txt
+RUN pip install -r requirements.txt
+
+# this is fairly slow, and the ABI is dependent on both cuda and pytorch
 WORKDIR /opt
 # fork of https://github.com/lbin/DCNv2.git with ability to compile with cuda
 # without an nvidia gpu attached
@@ -47,16 +57,7 @@ RUN git clone https://github.com/acmiyaguchi/DCNv2.git && \
     FORCE_CUDA=1 \
     # https://github.com/pytorch/extension-cpp/issues/71
     TORCH_CUDA_ARCH_LIST="3.5;5.0;6.0;6.1;7.0;7.5;8.0;8.6+PTX" \
-    python setup.py build develop
-
-# install nms
-WORKDIR /app
-ADD vendor/ vendor/
-RUN cd vendor/nms && \
-    python setup.py build install
-
-ADD requirements.txt /app/requirements.txt
-RUN pip install -r requirements.txt
+    ./make.sh
 
 # add the source code to the image
 WORKDIR /app
