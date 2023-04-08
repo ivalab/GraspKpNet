@@ -23,7 +23,8 @@ RUN apt-get update && \
     python3-pip \
     python-is-python3 \
     ninja-build \
-    libgl1-mesa-glx
+    libgl1-mesa-glx \
+    libsm-dev
 
 RUN pip install --upgrade pip wheel cython
 

@@ -11,9 +11,6 @@ from .base_detector import BaseDetector
 
 
 class DbMCtdetDetector(BaseDetector):
-    def __init__(self, opt):
-        super(DbMCtdetDetector, self).__init__(opt)
-
     def process(self, images, return_time=False):
         with torch.no_grad():
             output = self.model(images)[-1]
@@ -92,23 +89,28 @@ class DbMCtdetDetector(BaseDetector):
                 results[j] = results[j][keep_inds]
         return results
 
-    def debug(self, debugger, images, dets, output, scale=1):
+    def debug(self, debugger, images, dets, output, scale=1, save_dir=None):
         detection = dets.detach().cpu().numpy().copy()
         detection[:, :, :4] *= self.opt.down_ratio
         for i in range(1):
             img = images[i].detach().cpu().numpy().transpose(1, 2, 0)
             img = ((img * self.std + self.mean) * 255).astype(np.uint8)
-            pred = debugger.gen_colormap(output["hm"][i].detach().cpu().numpy())
-            debugger.add_blend_img(img, pred, "pred_hm_{:.1f}".format(scale))
+            for key in ["lm", "rm", "ct"]:
+                pred = debugger.gen_colormap(output[key][i].detach().cpu().numpy())
+                debugger.add_blend_img(
+                    img, pred, "pred_{}_{:.1f}".format(key, scale)
+                )
             debugger.add_img(img, img_id="out_pred_{:.1f}".format(scale))
             for k in range(len(dets[i])):
-                if detection[i, k, 4] > self.opt.center_thresh:
+                if detection[i, k, 4] > self.opt.center_threshold:
                     debugger.add_coco_bbox(
                         detection[i, k, :4],
                         detection[i, k, -1],
                         detection[i, k, 4],
                         img_id="out_pred_{:.1f}".format(scale),
                     )
+        if save_dir:
+            debugger.save_all_imgs(save_dir)
 
     def show_results(self, debugger, image, results):
         debugger.add_img(image, img_id="ctdet")
@@ -116,4 +118,7 @@ class DbMCtdetDetector(BaseDetector):
             for bbox in results[j]:
                 if bbox[4] > self.opt.vis_thresh:
                     debugger.add_coco_bbox(bbox[:4], j - 1, bbox[4], img_id="ctdet")
-        debugger.show_all_imgs(pause=self.pause)
+        try:
+            debugger.show_all_imgs(pause=self.pause)
+        except:
+            print("visual debugger does not work in headless mode")

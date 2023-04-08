@@ -1,3 +1,5 @@
+import os
+
 import cv2
 import numpy as np
 
@@ -329,6 +331,9 @@ class Debugger(object):
         cv2.imwrite(path + "{}.png".format(imgId), self.imgs[imgId])
 
     def save_all_imgs(self, path="./cache/debug/", prefix="", genID=False):
+        # ensure the path exists before saving
+        if not os.path.exists(path):
+            os.makedirs(path)
         if genID:
             try:
                 idx = int(np.loadtxt(path + "/id.txt"))

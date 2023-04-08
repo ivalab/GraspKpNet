@@ -73,13 +73,13 @@ class BaseDetector(object):
     def merge_outputs(self, detections):
         raise NotImplementedError
 
-    def debug(self, debugger, images, dets, output, scale=1):
+    def debug(self, debugger, images, dets, output, scale=1, save_dir=None):
         raise NotImplementedError
 
     def show_results(self, debugger, image, results):
         raise NotImplementedError
 
-    def run(self, image_or_path_or_tensor, meta=None):
+    def run(self, image_or_path_or_tensor, meta=None, save_dir=None):
         load_time, pre_time, net_time, dec_time, post_time = 0, 0, 0, 0, 0
         merge_time, tot_time = 0, 0
         debugger = Debugger(
@@ -126,7 +126,7 @@ class BaseDetector(object):
             dec_time += decode_time - forward_time
 
             if self.opt.debug >= 2:
-                self.debug(debugger, images, dets, output, scale)
+                self.debug(debugger, images, dets, output, scale, save_dir)
 
             if self.opt.task.split("_")[0] == "dbmctdet":
                 dets = self.post_process(dets, meta, scale)
