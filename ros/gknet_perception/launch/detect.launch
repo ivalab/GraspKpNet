@@ -1,0 +1,23 @@
+<launch>
+  <!-- args for calibration parameters -->
+  <arg name="color_image_topic" default="/camera/color/image_raw" />
+  <arg name="depth_image_topic" default="/camera/depth/image_rect_raw" />
+  <arg name="keypoints_topic" default="/gknet/keypoints" />
+  <arg name="annotated_image_topic" default="/gknet/annotated_image" />
+  <arg name="num_keypoints" default="5" />
+
+  <!-- now let's run our detection script -->
+  <node
+    name="gknet_detect"
+    pkg="gknet_perception"
+    type="detect.py"
+    output="screen"
+    args="
+      --color_image_topic $(arg color_image_topic)
+      --depth_image_topic $(arg depth_image_topic)
+      --keypoints_topic $(arg keypoints_topic)
+      --annotated_image_topic $(arg annotated_image_topic)
+      --num_keypoints $(arg num_keypoints)
+    "
+  />
+</launch>
