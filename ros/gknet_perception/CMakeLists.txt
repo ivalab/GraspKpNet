@@ -4,14 +4,14 @@ project(gknet_perception)
 find_package(catkin)
 
 # add launch files
-# install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 # add scripts
-# file(GLOB SCRIPT_FILES script/*)
-# install(
-#   PROGRAMS ${SCRIPT_FILES}
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+file(GLOB SCRIPT_FILES script/*)
+install(
+  PROGRAMS ${SCRIPT_FILES}
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 # add tests
 if(CATKIN_ENABLE_TESTING)

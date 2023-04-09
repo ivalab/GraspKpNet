@@ -10,7 +10,18 @@ RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    ros-noetic-ros-core=1.5.0-1*
+    ros-noetic-ros-core=1.5.0-1* \
+    python3-catkin-tools \
+    python3-rosdep
+
+# setup rosdep
+RUN rosdep init && rosdep update
+
+# install ros packages
+# rosdep install --from-paths src -r -y --simulate
+RUN apt-get install -y --no-install-recommends \
+    ros-noetic-ros-pytest \
+    ros-noetic-cv-bridge
 
 # We need cuda to build DCNv2
 
@@ -65,6 +76,15 @@ WORKDIR /app
 ADD . /app
 
 RUN pip install -e .
+
+# create a catkin workspace using a symlink to the app
+RUN mkdir -p /catkin_ws/src && \
+    cd /catkin_ws && \
+    ln -s /app src/app && \
+    catkin init && \
+    catkin config --extend /opt/ros/noetic && \
+    rosdep install --from-paths src --ignore-src -r -y && \
+    catkin build
 
 # setup entrypoint
 COPY ./docker/bin/ros_entrypoint.sh /

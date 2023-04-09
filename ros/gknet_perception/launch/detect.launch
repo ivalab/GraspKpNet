@@ -4,6 +4,8 @@
   <arg name="depth_image_topic" default="/camera/depth/image_rect_raw" />
   <arg name="keypoints_topic" default="/gknet/keypoints" />
   <arg name="annotated_image_topic" default="/gknet/annotated_image" />
+  <arg name="model" default="dbmctdet_cornell" />
+  <arg name="checkpoint" default="/app/models/model_dla34_cornell.pth" />
   <arg name="num_keypoints" default="5" />
 
   <!-- now let's run our detection script -->
@@ -17,6 +19,8 @@
       --depth_image_topic $(arg depth_image_topic)
       --keypoints_topic $(arg keypoints_topic)
       --annotated_image_topic $(arg annotated_image_topic)
+      --model $(arg model)
+      --checkpoint $(arg checkpoint)
       --num_keypoints $(arg num_keypoints)
     "
   />

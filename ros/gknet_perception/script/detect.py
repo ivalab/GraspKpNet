@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 This script will run the detector on a stream of images from a camera.
 
@@ -15,6 +16,9 @@ import rospy
 from cv_bridge import CvBridge
 from gknet_msgs.msg import Keypoint, KeypointList
 from sensor_msgs.msg import Image
+
+from gknet.detectors.detector_factory import detector_factory
+from gknet.opts import opts
 
 
 def preprocess(rgb_img, depth_img):
@@ -99,7 +103,7 @@ def detect_callback(
 
     # replace blue channel with the depth channel
     img = preprocess(rgb_img, (depth_img * 1000.0).astype(np.uint8))
-    detector_results = detector.detect(img[:, :, :])["results"]
+    detector_results = detector.run(img[:, :, :])["results"]
     keypoint_list = postprocess(detector_results, rgb_img, depth_img, num_keypoints)
     annotated_img = annotate(rgb_img, keypoint_list)
 
@@ -121,6 +125,10 @@ def parse_args():
         "--annotated-image-topic", type=str, default="/gknet/annotated_image"
     )
     parser.add_argument("--num-keypoints", type=int, default=5)
+    parser.add_argument("--model", type=str, default="dbmctdet_cornell")
+    parser.add_argument(
+        "--checkpoint", type=str, default="/app/models/model_dla34_cornell.pth"
+    )
     # ignore any other args
     args, _ = parser.parse_known_args()
     return args
@@ -128,10 +136,12 @@ def parse_args():
 
 def main():
     args = parse_args()
+    # also parse opts
+    opt = opts().init(args=f"{args.model} " f"--load_model {args.checkpoint}".split())
+    detector = detector_factory[opt.task](opt)
 
     rospy.init_node("detect", anonymous=True)
     cv_bridge = CvBridge()
-    detector = None
 
     keypoint_pub = rospy.Publisher(args.keypoints_topic, KeypointList, queue_size=1)
     annotated_image_pub = rospy.Publisher(
@@ -151,6 +161,7 @@ def main():
             num_keypoints=args.num_keypoints,
         )
     )
+    rospy.spin()
 
 
 if __name__ == "__main__":
