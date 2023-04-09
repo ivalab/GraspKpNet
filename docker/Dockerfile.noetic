@@ -21,7 +21,9 @@ RUN rosdep init && rosdep update
 # rosdep install --from-paths src -r -y --simulate
 RUN apt-get install -y --no-install-recommends \
     ros-noetic-ros-pytest \
-    ros-noetic-cv-bridge
+    ros-noetic-cv-bridge \
+    # additional package for viewing images
+    ros-noetic-image-view
 
 # We need cuda to build DCNv2
 

@@ -1,12 +1,12 @@
 <launch>
   <!-- args for calibration parameters -->
   <arg name="color_image_topic" default="/camera/color/image_raw" />
-  <arg name="depth_image_topic" default="/camera/depth/image_rect_raw" />
+  <arg name="depth_image_topic" default="/camera/depth/image_raw" />
   <arg name="keypoints_topic" default="/gknet/keypoints" />
   <arg name="annotated_image_topic" default="/gknet/annotated_image" />
   <arg name="model" default="dbmctdet_cornell" />
   <arg name="checkpoint" default="/app/models/model_dla34_cornell.pth" />
-  <arg name="num_keypoints" default="5" />
+  <arg name="num_keypoints" default="10" />
 
   <!-- now let's run our detection script -->
   <node
@@ -15,13 +15,13 @@
     type="detect.py"
     output="screen"
     args="
-      --color_image_topic $(arg color_image_topic)
-      --depth_image_topic $(arg depth_image_topic)
-      --keypoints_topic $(arg keypoints_topic)
-      --annotated_image_topic $(arg annotated_image_topic)
+      --color-image-topic $(arg color_image_topic)
+      --depth-image-topic $(arg depth_image_topic)
+      --keypoints-topic $(arg keypoints_topic)
+      --annotated-image-topic $(arg annotated_image_topic)
       --model $(arg model)
       --checkpoint $(arg checkpoint)
-      --num_keypoints $(arg num_keypoints)
+      --num-keypoints $(arg num_keypoints)
     "
   />
 </launch>

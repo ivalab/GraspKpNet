@@ -20,12 +20,14 @@ from sensor_msgs.msg import Image
 from gknet.detectors.detector_factory import detector_factory
 from gknet.opts import opts
 
+IMG_LEN = 512
+
 
 def preprocess(rgb_img, depth_img):
     """Merge rgb and depth images into a single image, and resize it."""
-    img = rgb_img
-    img[:, :, 0] = depth_img
-    return cv2.resize(img, (256, 256))
+    img = rgb_img.copy()
+    img[:, :, 0] = depth_img.copy()
+    return cv2.resize(img, (IMG_LEN, IMG_LEN))
 
 
 def postprocess(detector_output, rgb_img, depth_img, num_keypoints):
@@ -47,8 +49,8 @@ def postprocess(detector_output, rgb_img, depth_img, num_keypoints):
     kps_pr = sorted(kps_pr, key=lambda x: x[-1], reverse=True)
     for kp_pr in kps_pr[:num_keypoints]:
         # NOTE: wonder what this transformation actually does...
-        shape = rgb_img.shape / 512.0
-        f_w, f_h = shape[1], shape[0]
+        shape = rgb_img.shape
+        f_w, f_h = shape[1] / IMG_LEN, shape[0] / IMG_LEN
         kp_lm = [int(kp_pr[0] * f_w), int(kp_pr[1] * f_h)]
         kp_rm = [int(kp_pr[2] * f_w), int(kp_pr[3] * f_h)]
         center = [int((kp_lm[0] + kp_rm[0]) / 2), int((kp_lm[1] + kp_rm[1]) / 2)]
@@ -136,6 +138,7 @@ def parse_args():
 
 def main():
     args = parse_args()
+    print("starting detector with args: ", args)
     # also parse opts
     opt = opts().init(args=f"{args.model} " f"--load_model {args.checkpoint}".split())
     detector = detector_factory[opt.task](opt)
@@ -143,13 +146,15 @@ def main():
     rospy.init_node("detect", anonymous=True)
     cv_bridge = CvBridge()
 
-    keypoint_pub = rospy.Publisher(args.keypoints_topic, KeypointList, queue_size=1)
+    keypoint_pub = rospy.Publisher(
+        args.keypoints_topic, KeypointList, queue_size=1, latch=True
+    )
     annotated_image_pub = rospy.Publisher(
-        args.annotated_image_topic, Image, queue_size=1
+        args.annotated_image_topic, Image, queue_size=1, latch=True
     )
 
-    image_sub = message_filters.Subscriber("/camera/rgb/image_rect_color", Image)
-    depth_sub = message_filters.Subscriber("/camera/depth_registered/image", Image)
+    image_sub = message_filters.Subscriber(args.color_image_topic, Image)
+    depth_sub = message_filters.Subscriber(args.depth_image_topic, Image)
     ts = message_filters.ApproximateTimeSynchronizer([image_sub, depth_sub], 1, 0.1)
     ts.registerCallback(
         partial(
@@ -161,6 +166,7 @@ def main():
             num_keypoints=args.num_keypoints,
         )
     )
+    print("registered callbacks, waiting for messages...")
     rospy.spin()
 
 

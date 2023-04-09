@@ -1,5 +1,4 @@
 # This message encapsulates the result of a keypoint detection
-std_msgs/Header header
 
 # kp_lm, kp_rm, center, score
 float64[2] left_middle
