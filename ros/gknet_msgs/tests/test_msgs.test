@@ -1,0 +1,11 @@
+<launch>
+  <arg name="test_name" value="test_msgs" />
+  <param name="test_module" value="$(find gknet_msgs)/tests" />
+  <test
+    test-name="$(arg test_name)"
+    pkg="ros_pytest"
+    type="ros_pytest_runner"
+    args="-k $(arg test_name) -vvv -s"
+    time-limit="15.0"
+  />
+</launch>
