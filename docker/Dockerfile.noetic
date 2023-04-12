@@ -1,5 +1,36 @@
 FROM nvidia/cuda:11.7.0-devel-ubuntu20.04
 
+# NOTE: We need cuda devel to build DCNv2, but we don't necessarily need it to
+# run inference. This should probably become a multi-part build if we care about
+# deployment size.
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    apt-utils \
+    build-essential \
+    git \
+    python3-dev \
+    python3-pip \
+    python-is-python3 \
+    ninja-build \
+    libgl1-mesa-glx \
+    libsm-dev \
+    wget \
+    && \
+    apt clean
+
+RUN pip install --upgrade pip wheel cython
+
+# download the dla34 models
+# NOTE: if these links are broken for some reason, this can safely be removed
+# and instead have the models mounted from the host. You will also probably want
+# to download the full set of pretrained models to mount onto the container
+# during development.
+RUN mkdir -p /catkin_ws/src/app/models && \
+    cd /catkin_ws/src/app/models && \
+    wget https://f004.backblazeb2.com/file/acm-ivalab/GraspKpNet/models/model_dla34_cornell.pth && \
+    wget https://f004.backblazeb2.com/file/acm-ivalab/GraspKpNet/models/model_dla34_ajd.pth
+
 # take the core ros image on top of the cuda focal image
 # https://github.com/osrf/docker_images/blob/master/ros/noetic/ubuntu/focal/ros-core/Dockerfile
 
@@ -12,34 +43,18 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ros-noetic-ros-core=1.5.0-1* \
     python3-catkin-tools \
-    python3-rosdep
-
-# setup rosdep
-RUN rosdep init && rosdep update
-
-# install ros packages
-# rosdep install --from-paths src -r -y --simulate
-RUN apt-get install -y --no-install-recommends \
+    python3-rosdep \
+    # install ros packages
+    # rosdep install --from-paths src -r -y --simulate
     ros-noetic-ros-pytest \
     ros-noetic-cv-bridge \
     # additional package for viewing images
-    ros-noetic-image-view
+    ros-noetic-image-view \
+    && \
+    apt clean
 
-# We need cuda to build DCNv2
-
-RUN apt-get update && \
-    apt-get install -y \
-    apt-utils \
-    build-essential \
-    git \
-    python3-dev \
-    python3-pip \
-    python-is-python3 \
-    ninja-build \
-    libgl1-mesa-glx \
-    libsm-dev
-
-RUN pip install --upgrade pip wheel cython
+# setup rosdep
+RUN rosdep init && rosdep update
 
 # install cocoapi
 WORKDIR /opt
@@ -60,7 +75,8 @@ RUN cd vendor/nms && \
 ADD requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 
-# this is fairly slow, and the ABI is dependent on both cuda and pytorch
+# this is fairly slow, and the ABI is dependent on both cuda and pytorch. We
+# need to make sure we build and run with the same version of pytorch.
 WORKDIR /opt
 # fork of https://github.com/lbin/DCNv2.git with ability to compile with cuda
 # without an nvidia gpu attached
@@ -74,19 +90,21 @@ RUN git clone https://github.com/acmiyaguchi/DCNv2.git && \
     ./make.sh
 
 # add the source code to the image
-WORKDIR /app
-ADD . /app
+WORKDIR /catkin_ws/src/app
+ADD . ./
 
 RUN pip install -e .
 
-# create a catkin workspace using a symlink to the app
-RUN mkdir -p /catkin_ws/src && \
-    cd /catkin_ws && \
-    ln -s /app src/app && \
-    catkin init && \
-    catkin config --extend /opt/ros/noetic && \
+# cache the model weights for default inference
+RUN python scripts/load_detector.py dbmctdet_cornell \
+    --load_model models/model_dla34_cornell.pth
+
+WORKDIR /catkin_ws
+RUN catkin config --init --extend /opt/ros/noetic && \
     rosdep install --from-paths src --ignore-src -r -y && \
     catkin build
+
+WORKDIR /catkin_ws/src/app
 
 # setup entrypoint
 COPY ./docker/bin/ros_entrypoint.sh /

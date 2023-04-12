@@ -129,7 +129,9 @@ def parse_args():
     parser.add_argument("--num-keypoints", type=int, default=5)
     parser.add_argument("--model", type=str, default="dbmctdet_cornell")
     parser.add_argument(
-        "--checkpoint", type=str, default="/app/models/model_dla34_cornell.pth"
+        "--checkpoint",
+        type=str,
+        default="/catkin_ws/src/app/models/model_dla34_cornell.pth",
     )
     # ignore any other args
     args, _ = parser.parse_known_args()

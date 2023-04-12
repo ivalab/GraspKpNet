@@ -2,3 +2,6 @@
 /exp/
 /datasets/
 /data/
+.cache/
+*.egg-info
+__pycache__/

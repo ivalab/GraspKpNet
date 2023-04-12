@@ -12,7 +12,7 @@ services:
     network_mode: host
     shm_size: 2gb
     volumes:
-      - ./:/app/
+      - ./:/catkin_ws/src/app
       - .cache/torch:/root/.cache/torch
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ~/.Xauthority:/root/.Xauthority
