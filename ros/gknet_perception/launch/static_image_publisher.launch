@@ -8,6 +8,7 @@
   <arg name="depth_image_filename" default="depth.jpg" />
   <arg name="color_image_topic" default="/camera/color/image_raw" />
   <arg name="depth_image_topic" default="/camera/depth/image_raw" />
+  <arg name="args" default="" />
 
   <!-- now let's run our detection script -->
   <node
@@ -21,6 +22,7 @@
       --depth-image-filename $(arg depth_image_filename)
       --color-image-topic $(arg color_image_topic)
       --depth-image-topic $(arg depth_image_topic)
+      $(arg args)
     "
   />
 </launch>

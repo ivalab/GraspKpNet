@@ -11,7 +11,7 @@ import cv2
 import numpy as np
 import rospy
 from cv_bridge import CvBridge
-from sensor_msgs.msg import CameraInfo, Image
+from sensor_msgs.msg import Image
 
 
 def parse_args():
@@ -24,6 +24,11 @@ def parse_args():
     )
     parser.add_argument(
         "--depth-image-topic", type=str, default="/camera/depth/image_raw"
+    )
+    parser.add_argument(
+        "--display",
+        action="store_true",
+        help="display the images as they are published",
     )
     # ignore any other args
     args, _ = parser.parse_known_args()
@@ -53,12 +58,18 @@ def main():
 
     rospy.init_node("static_image_topic", anonymous=True)
     cv_bridge = CvBridge()
-    color_pub = rospy.Publisher(args.color_image_topic, Image, queue_size=1, latch=True)
-    depth_pub = rospy.Publisher(args.depth_image_topic, Image, queue_size=1, latch=True)
+    color_pub = rospy.Publisher(args.color_image_topic, Image, queue_size=2, latch=True)
+    depth_pub = rospy.Publisher(args.depth_image_topic, Image, queue_size=2, latch=True)
 
     color_pub.publish(cv_bridge.cv2_to_imgmsg(color_image, encoding="bgr8"))
     depth_pub.publish(cv_bridge.cv2_to_imgmsg(depth_image, encoding="32FC1"))
-
+    if args.display:
+        # show image
+        cv2.imshow("color", color_image)
+        cv2.imshow("depth", depth_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+    print("spinning")
     rospy.spin()
 
 
