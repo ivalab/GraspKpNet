@@ -4,6 +4,22 @@ FROM nvidia/cuda:11.7.0-devel-ubuntu20.04
 # run inference. This should probably become a multi-part build if we care about
 # deployment size.
 
+# take the core ros image on top of the cuda focal image
+# https://github.com/osrf/docker_images/blob/master/ros/noetic/ubuntu/focal/ros-core/Dockerfile
+
+# noninteractive to avoid tzdata prompt
+ENV DEBIAN_FRONTEND noninteractive
+ENV ROS_DISTRO noetic
+RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.list.d/ros1-latest.list
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ros-noetic-ros-core=1.5.0-1* \
+    python3-catkin-tools \
+    python3-rosdep \
+    && \
+    apt clean
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     apt-utils \
@@ -31,19 +47,8 @@ RUN mkdir -p /catkin_ws/src/app/models && \
     wget https://f004.backblazeb2.com/file/acm-ivalab/GraspKpNet/models/model_dla34_cornell.pth && \
     wget https://f004.backblazeb2.com/file/acm-ivalab/GraspKpNet/models/model_dla34_ajd.pth
 
-# take the core ros image on top of the cuda focal image
-# https://github.com/osrf/docker_images/blob/master/ros/noetic/ubuntu/focal/ros-core/Dockerfile
-
-# noninteractive to avoid tzdata prompt
-ENV DEBIAN_FRONTEND noninteractive
-ENV ROS_DISTRO noetic
-RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.list.d/ros1-latest.list
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    ros-noetic-ros-core=1.5.0-1* \
-    python3-catkin-tools \
-    python3-rosdep \
+RUN apt update && \
+    apt install -y --no-install-recommends \
     # install ros packages
     # rosdep install --from-paths src -r -y --simulate
     ros-noetic-ros-pytest \
@@ -52,9 +57,6 @@ RUN apt-get update && \
     ros-noetic-image-view \
     && \
     apt clean
-
-# setup rosdep
-RUN rosdep init && rosdep update
 
 # install cocoapi
 WORKDIR /opt
@@ -101,6 +103,8 @@ RUN python scripts/load_detector.py dbmctdet_cornell \
 
 WORKDIR /catkin_ws
 RUN catkin config --init --extend /opt/ros/noetic && \
+    rosdep init && \
+    rosdep update && \
     rosdep install --from-paths src --ignore-src -r -y && \
     catkin build
 
