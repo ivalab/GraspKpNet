@@ -108,5 +108,5 @@ WORKDIR /catkin_ws/src/app
 
 # setup entrypoint
 COPY ./docker/bin/ros_entrypoint.sh /
-ENTRYPOINT ["/ros_entrypoint.sh"]
+ENTRYPOINT ["/ros_entrypoint.sh",  "stdbuf", "-o", "L"]
 CMD ["bash"]

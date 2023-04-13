@@ -133,6 +133,8 @@ def parse_args():
         type=str,
         default="/catkin_ws/src/app/models/model_dla34_cornell.pth",
     )
+    parser.add_argument("--publisher-queue-size", type=int, default=10)
+    parser.add_argument("--subscriber-queue-size", type=int, default=10)
     # ignore any other args
     args, _ = parser.parse_known_args()
     return args
@@ -145,19 +147,33 @@ def main():
     opt = opts().init(args=f"{args.model} " f"--load_model {args.checkpoint}".split())
     detector = detector_factory[opt.task](opt)
 
-    rospy.init_node("detect", anonymous=True)
+    rospy.init_node("detect", anonymous=True, log_level=rospy.INFO)
     cv_bridge = CvBridge()
 
+    # let's wait for the first message to arrive
+    print("waiting for first message...")
+    rospy.wait_for_message(args.color_image_topic, Image)
+    rospy.wait_for_message(args.depth_image_topic, Image)
+    print("first message arrived")
+
     keypoint_pub = rospy.Publisher(
-        args.keypoints_topic, KeypointList, queue_size=1, latch=True
+        args.keypoints_topic,
+        KeypointList,
+        queue_size=args.publisher_queue_size,
+        latch=True,
     )
     annotated_image_pub = rospy.Publisher(
-        args.annotated_image_topic, Image, queue_size=1, latch=True
+        args.annotated_image_topic,
+        Image,
+        queue_size=args.publisher_queue_size,
+        latch=True,
     )
 
     image_sub = message_filters.Subscriber(args.color_image_topic, Image)
     depth_sub = message_filters.Subscriber(args.depth_image_topic, Image)
-    ts = message_filters.ApproximateTimeSynchronizer([image_sub, depth_sub], 1, 0.1)
+    ts = message_filters.ApproximateTimeSynchronizer(
+        [image_sub, depth_sub], args.subscriber_queue_size, 0.1
+    )
     ts.registerCallback(
         partial(
             detect_callback,

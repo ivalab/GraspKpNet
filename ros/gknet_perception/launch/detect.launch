@@ -13,7 +13,7 @@
 
   <!-- now let's run our detection script -->
   <node
-    name="gknet_detect"
+    name="$(anon gknet_detect)"
     pkg="gknet_perception"
     type="detect.py"
     output="screen"
