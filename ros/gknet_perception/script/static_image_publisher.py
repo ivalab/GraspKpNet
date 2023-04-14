@@ -60,8 +60,8 @@ def main():
 
     rospy.init_node("static_image_topic", anonymous=True)
     cv_bridge = CvBridge()
-    color_pub = rospy.Publisher(args.color_image_topic, Image, queue_size=2, latch=True)
-    depth_pub = rospy.Publisher(args.depth_image_topic, Image, queue_size=2, latch=True)
+    color_pub = rospy.Publisher(args.color_image_topic, Image, queue_size=1, latch=True)
+    depth_pub = rospy.Publisher(args.depth_image_topic, Image, queue_size=1, latch=True)
 
     color_pub.publish(cv_bridge.cv2_to_imgmsg(color_image, encoding="bgr8"))
     depth_pub.publish(cv_bridge.cv2_to_imgmsg(depth_image, encoding="32FC1"))
