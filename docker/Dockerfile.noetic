@@ -37,16 +37,6 @@ RUN apt-get update && \
 
 RUN pip install --upgrade pip wheel cython
 
-# download the dla34 models
-# NOTE: if these links are broken for some reason, this can safely be removed
-# and instead have the models mounted from the host. You will also probably want
-# to download the full set of pretrained models to mount onto the container
-# during development.
-RUN mkdir -p /catkin_ws/src/app/models && \
-    cd /catkin_ws/src/app/models && \
-    wget https://f004.backblazeb2.com/file/acm-ivalab/GraspKpNet/models/model_dla34_cornell.pth && \
-    wget https://f004.backblazeb2.com/file/acm-ivalab/GraspKpNet/models/model_dla34_ajd.pth
-
 RUN apt update && \
     apt install -y --no-install-recommends \
     # install ros packages
@@ -91,15 +81,27 @@ RUN git clone https://github.com/acmiyaguchi/DCNv2.git && \
     TORCH_CUDA_ARCH_LIST="3.5;5.0;6.0;6.1;7.0;7.5;8.0;8.6+PTX" \
     ./make.sh
 
+# download the dla34 models
+# NOTE: if these links are broken for some reason, this can safely be removed
+# and instead have the models mounted from the host. You will also probably want
+# to download the full set of pretrained models to mount onto the container
+# during development.
+RUN mkdir -p /opt/models && \
+    cd /opt/models && \
+    wget https://f004.backblazeb2.com/file/acm-ivalab/GraspKpNet/models/model_dla34_cornell.pth && \
+    wget https://f004.backblazeb2.com/file/acm-ivalab/GraspKpNet/models/model_dla34_ajd.pth
+
 # add the source code to the image
+# we also link /app to /catkin_ws/src/app as a shortcut to the source
 WORKDIR /catkin_ws/src/app
 ADD . ./
+RUN ln -s /catkin_ws/src/app /app
 
 RUN pip install -e .
 
 # cache the model weights for default inference
 RUN python scripts/load_detector.py dbmctdet_cornell \
-    --load_model models/model_dla34_cornell.pth
+    --load_model /opt/models/model_dla34_cornell.pth
 
 WORKDIR /catkin_ws
 RUN catkin config --init --extend /opt/ros/noetic && \

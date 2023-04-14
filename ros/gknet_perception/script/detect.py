@@ -120,7 +120,9 @@ def parse_args():
         "--color-image-topic", type=str, default="/camera/color/image_raw"
     )
     parser.add_argument(
-        "--depth-image-topic", type=str, default="/camera/depth/image_raw"
+        "--depth-image-topic",
+        type=str,
+        default="/camera/aligned_depth_to_color/image_raw",
     )
     parser.add_argument("--keypoints-topic", type=str, default="/gknet/keypoints")
     parser.add_argument(
@@ -131,7 +133,7 @@ def parse_args():
     parser.add_argument(
         "--checkpoint",
         type=str,
-        default="/catkin_ws/src/app/models/model_dla34_cornell.pth",
+        default="/opt/models/model_dla34_cornell.pth",
     )
     parser.add_argument("--publisher-queue-size", type=int, default=10)
     parser.add_argument("--subscriber-queue-size", type=int, default=10)

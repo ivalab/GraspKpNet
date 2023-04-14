@@ -1,14 +1,14 @@
 <launch>
   <!-- args for calibration parameters -->
   <arg name="color_image_topic" default="/camera/color/image_raw" />
-  <arg name="depth_image_topic" default="/camera/depth/image_raw" />
+  <arg
+    name="depth_image_topic"
+    default="/camera/aligned_depth_to_color/image_raw"
+  />
   <arg name="keypoints_topic" default="/gknet/keypoints" />
   <arg name="annotated_image_topic" default="/gknet/annotated_image" />
   <arg name="model" default="dbmctdet_cornell" />
-  <arg
-    name="checkpoint"
-    default="/catkin_ws/src/app/models/model_dla34_cornell.pth"
-  />
+  <arg name="checkpoint" default="/opt/models/model_dla34_cornell.pth" />
   <arg name="num_keypoints" default="10" />
 
   <!-- now let's run our detection script -->

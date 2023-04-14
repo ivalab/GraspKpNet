@@ -4,20 +4,20 @@ version: "3.8"
 services:
   # base container -- will simply exit once brought up
   # we can run commands via this container for running experiments, etc.
-  base: &base
+  base:
     build:
       context: .
       dockerfile: docker/Dockerfile.noetic
-    image: ivalab/gknet:latest
-    network_mode: host
-    shm_size: 2gb
-    volumes:
-      - ./:/catkin_ws/src/app
-      - .cache/torch:/root/.cache/torch
-      - /tmp/.X11-unix:/tmp/.X11-unix
-      - ~/.Xauthority:/root/.Xauthority
-    environment:
-      DISPLAY: $DISPLAY
+    <<: &base
+      image: ivalab/gknet:latest
+      network_mode: host
+      shm_size: 2gb
+      volumes:
+        - ./:/catkin_ws/src/app
+        - /tmp/.X11-unix:/tmp/.X11-unix
+        - ~/.Xauthority:/root/.Xauthority
+      environment:
+        DISPLAY: $DISPLAY
   gpu:
     <<: *base
     deploy:

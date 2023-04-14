@@ -23,7 +23,9 @@ def parse_args():
         "--color-image-topic", type=str, default="/camera/color/image_raw"
     )
     parser.add_argument(
-        "--depth-image-topic", type=str, default="/camera/depth/image_raw"
+        "--depth-image-topic",
+        type=str,
+        default="/camera/aligned_depth_to_color/image_raw",
     )
     parser.add_argument(
         "--display",

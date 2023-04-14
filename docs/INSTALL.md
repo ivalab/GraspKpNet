@@ -5,6 +5,7 @@
 Docker is a self-contained environment that can be used to run the code without having to install the dependencies.
 We have built a docker image with Ubuntu 20.04, ROS Noetic, and PyTorch 1.13.1.
 Make sure you have [nvidia-docker](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) installed.
+The newer version of PyTorch means that the host machine must have a CUDA 11.7 compatible driver.
 At the root of the repository, run the following command to build the container:
 
 ```bash
