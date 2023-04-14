@@ -135,7 +135,7 @@ def parse_args():
         type=str,
         default="/opt/models/model_dla34_cornell.pth",
     )
-    parser.add_argument("--publisher-queue-size", type=int, default=10)
+    parser.add_argument("--publisher-queue-size", type=int, default=1)
     parser.add_argument("--subscriber-queue-size", type=int, default=10)
     # ignore any other args
     args, _ = parser.parse_known_args()
@@ -153,10 +153,11 @@ def main():
     cv_bridge = CvBridge()
 
     # let's wait for the first message to arrive
-    print("waiting for first message...")
+    print(f"waiting for message on {args.color_image_topic}")
     rospy.wait_for_message(args.color_image_topic, Image)
+    print(f"waiting for message on {args.depth_image_topic}")
     rospy.wait_for_message(args.depth_image_topic, Image)
-    print("first message arrived")
+    print("input topics ready for processing")
 
     keypoint_pub = rospy.Publisher(
         args.keypoints_topic,
@@ -186,7 +187,9 @@ def main():
             num_keypoints=args.num_keypoints,
         )
     )
-    print("registered callbacks, waiting for messages...")
+    print(
+        f"registered callbacks, publishing to {args.keypoints_topic} and {args.annotated_image_topic}"
+    )
     rospy.spin()
 
 
