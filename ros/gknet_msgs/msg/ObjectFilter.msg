@@ -4,4 +4,4 @@
 
 # 2D bounding box of object in the image in pixels, in the format [xtl, ytl, xbr, ybr]
 # tl = top left, br = bottom right
-float64[4] bbox
+uint16[4] bbox

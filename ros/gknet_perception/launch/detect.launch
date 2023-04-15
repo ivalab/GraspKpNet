@@ -5,6 +5,7 @@
     name="depth_image_topic"
     default="/camera/aligned_depth_to_color/image_raw"
   />
+  <arg name="object_filter_topic" default="/gknet/object_filter" />
   <arg name="keypoints_topic" default="/gknet/keypoints" />
   <arg name="annotated_image_topic" default="/gknet/annotated_image" />
   <arg name="model" default="dbmctdet_cornell" />
@@ -20,11 +21,23 @@
     args="
       --color-image-topic $(arg color_image_topic)
       --depth-image-topic $(arg depth_image_topic)
+      --object-filter-topic $(arg object_filter_topic)
       --keypoints-topic $(arg keypoints_topic)
-      --annotated-image-topic $(arg annotated_image_topic)
       --model $(arg model)
       --checkpoint $(arg checkpoint)
       --num-keypoints $(arg num_keypoints)
+    "
+  />
+  <!-- launch the annotation script -->
+  <node
+    name="$(anon gknet_annotate)"
+    pkg="gknet_perception"
+    type="annotate.py"
+    output="screen"
+    args="
+      --color-image-topic $(arg color_image_topic)
+      --keypoints-topic $(arg keypoints_topic)
+      --annotated-image-topic $(arg annotated_image_topic)
     "
   />
 </launch>

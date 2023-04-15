@@ -124,9 +124,6 @@ def color_image_callback(state, cv_bridge, msg):
 
 
 def publish_object_filter_callback(pub, bboxes):
-    if not bboxes:
-        return
-
     msg = ObjectFilterList()
     for bbox in bboxes:
         # our message translates the pair of points into a flat list
