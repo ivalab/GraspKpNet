@@ -94,14 +94,21 @@ RUN mkdir -p /opt/models && \
 # add the source code to the image
 # we also link /app to /catkin_ws/src/app as a shortcut to the source
 WORKDIR /catkin_ws/src/app
-ADD . ./
 RUN ln -s /catkin_ws/src/app /app
 
+# let's only copy in the package, in case we don't change much of it
+
+ADD gknet/ ./gknet/
+ADD scripts/ ./scripts/
+ADD setup.py ./setup.py
 RUN pip install -e .
 
 # cache the model weights for default inference
 RUN python scripts/load_detector.py dbmctdet_cornell \
     --load_model /opt/models/model_dla34_cornell.pth
+
+# Now we can add the rest of the app
+ADD ./ .
 
 WORKDIR /catkin_ws
 RUN catkin config --init --extend /opt/ros/noetic && \
