@@ -49,6 +49,13 @@ class State:
         self.bbox_callback.append(callback)
 
     def draw_callback(self, event, x, y, flags, param):
+        if event == cv.EVENT_RBUTTONUP and not self.drawing:
+            # right click to delete a box
+            self.bboxes = [
+                bbox
+                for bbox in self.bboxes
+                if not (bbox[0][0] < x < bbox[1][0] and bbox[0][1] < y < bbox[1][1])
+            ]
         if event == cv.EVENT_LBUTTONDOWN:
             self.drawing = True
             self.initial_point = (x, y)
@@ -77,7 +84,10 @@ class State:
         return img
 
     def draw_loop(self, title="image"):
-        cv.namedWindow(title)
+        # https://stackoverflow.com/questions/56623487/why-does-a-right-click-open-a-drop-down-menu-in-my-opencv-imshow-window
+        cv.namedWindow(
+            title, flags=cv.WINDOW_AUTOSIZE | cv.WINDOW_KEEPRATIO | cv.WINDOW_GUI_NORMAL
+        )
         cv.setMouseCallback(title, partial(self.draw_callback))
         while True:
             annotated_img = deepcopy(self.img)
