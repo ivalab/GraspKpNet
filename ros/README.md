@@ -22,13 +22,8 @@ docker compose run --rm gpu catkin test
 docker compose run --rm gpu roslaunch gknet_perception static_image_publisher.launch
 
 # view images on a topic
-docker compose run --rm gpu rosrun image_view image_view image:=/camera/color/image_raw
-docker compose run --rm gpu rosrun image_view image_view image:=/gknet/annotated_image
-# or run this locally e.g. WSL2 graphics issues
-rosdep install image_view
-rosrun image_view image_view image:=/camera/color/image_raw
-rosrun image_view image_view image:=/gknet/annotated_image
-
+docker compose run --rm gpu rosrun gknet_perception stream_camera.py --image-topic=/camera/color/image_raw
+docker compose run --rm gpu rosrun gknet_perception stream_camera.py --image-topic=/gknet/annotated_image
 # run the gknet perception module
 docker compose run --rm gpu roslaunch gknet_perception detect.launch
 ```
