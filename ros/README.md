@@ -61,3 +61,21 @@ keypoints:
     score: 0.3544672131538391
   ...
 ```
+
+```yaml
+$ rostopic echo /gknet/object_filter
+
+header:
+  seq: 533
+  stamp:
+    secs: 0
+    nsecs:         0
+  frame_id: ''
+objects:
+  -
+    bbox: [164, 196, 297, 268]
+  -
+    bbox: [174, 268, 334, 362]
+  -
+    bbox: [318, 146, 570, 290]
+```
