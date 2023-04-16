@@ -81,7 +81,29 @@ class State:
         ):
             # green for current box
             cv.rectangle(img, self.initial_point, self.current_point, (0, 255, 0), 3)
-        return img
+
+    def draw_helptext(self, img):
+        """Draws text at the bottom of the screen as help/usage.
+
+        Left click drag to draw filter areas.
+        Right click to delete filter areas.
+        Q/Esc to quit.
+        """
+        helptext = [
+            "Left click drag to draw filter areas.",
+            "Right click to delete filter areas.",
+            "Q/Esc to quit.",
+        ]
+        for i, line in enumerate(reversed(helptext)):
+            cv.putText(
+                img,
+                line,
+                (10, img.shape[0] - 10 - i * 20),
+                cv.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (255, 255, 255),
+                1,
+            )
 
     def draw_loop(self, title="image"):
         # https://stackoverflow.com/questions/56623487/why-does-a-right-click-open-a-drop-down-menu-in-my-opencv-imshow-window
@@ -94,6 +116,7 @@ class State:
             self.draw_bboxes(annotated_img)
             for cb in self.bbox_callback:
                 cb(self.bboxes)
+            self.draw_helptext(annotated_img)
 
             cv.imshow(title, annotated_img)
             # quit if escape key or q is pressed, or if the exit button is pressed
