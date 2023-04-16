@@ -14,7 +14,7 @@ import message_filters
 import numpy as np
 import rospy
 from cv_bridge import CvBridge
-from gknet_msgs.msg import Keypoint, KeypointList, ObjectFilterList
+from gknet_msgs.msg import Keypoint, KeypointList, ObjectFilter, ObjectFilterList
 from sensor_msgs.msg import Image
 
 from gknet.detectors.detector_factory import detector_factory
@@ -30,7 +30,16 @@ def preprocess(rgb_img, depth_img):
     return cv2.resize(img, (IMG_LEN, IMG_LEN))
 
 
-def postprocess(detector_output, rgb_img, depth_img, num_keypoints):
+def intersects(rect, point):
+    """Determine if a point is in a rectangle.
+
+    Rect is an array representing the top-left and bottom-right corners of the
+    rectangle ([xtl, ytl, xbr, ybr]).
+    """
+    return rect[0] <= point[0] <= rect[2] and rect[1] <= point[1] <= rect[3]
+
+
+def postprocess(detector_output, shape, object_filter_list, num_keypoints):
     """Convert the detector output into a KeypointList message."""
     kps_pr = []
     for _, preds in detector_output.items():
@@ -45,11 +54,15 @@ def postprocess(detector_output, rgb_img, depth_img, num_keypoints):
     if len(kps_pr) == 0:
         return KeypointList(keypoints=[])
 
-    kps_msg = []
+    if not object_filter_list.objects:
+        # add a simulated filter that extends the entire image
+        object_filter_list.objects.append(ObjectFilter(bbox=[0, 0, shape[0], shape[1]]))
+
+    # keep track of which points belong to which filter
+    kp_per_filer = [[] for _ in range(len(object_filter_list.objects))]
     kps_pr = sorted(kps_pr, key=lambda x: x[-1], reverse=True)
-    for kp_pr in kps_pr[:num_keypoints]:
+    for kp_pr in kps_pr:
         # NOTE: wonder what this transformation actually does...
-        shape = rgb_img.shape
         f_w, f_h = shape[1] / IMG_LEN, shape[0] / IMG_LEN
         kp_lm = [int(kp_pr[0] * f_w), int(kp_pr[1] * f_h)]
         kp_rm = [int(kp_pr[2] * f_w), int(kp_pr[3] * f_h)]
@@ -57,7 +70,20 @@ def postprocess(detector_output, rgb_img, depth_img, num_keypoints):
         kp_msg = Keypoint(
             left_middle=kp_lm, right_middle=kp_rm, center=center, score=kp_pr[-1]
         )
-        kps_msg.append(kp_msg)
+        # check for intersection with each filter
+        for i, obj_filter in enumerate(object_filter_list.objects):
+            if len(kp_per_filer[i]) >= num_keypoints:
+                continue
+            if intersects(obj_filter.bbox, center):
+                kp_per_filer[i].append(kp_msg)
+        # break early if we have enough keypoints
+        if all(len(kps) >= num_keypoints for kps in kp_per_filer):
+            break
+
+    # merge keypoints
+    kps_msg = []
+    for kps in kp_per_filer:
+        kps_msg.extend(kps)
 
     return KeypointList(keypoints=kps_msg)
 
@@ -68,7 +94,8 @@ def detect_callback(
     keypoint_pub,
     rgb_msg,
     depth_msg,
-    num_keypoints=5,
+    object_filter_msg,
+    num_keypoints=1,
 ):
     rgb_img = np.array(
         cv_bridge.imgmsg_to_cv2(rgb_msg, desired_encoding="bgr8"), dtype=np.uint8
@@ -80,7 +107,9 @@ def detect_callback(
     # replace blue channel with the depth channel
     img = preprocess(rgb_img, (depth_img * 1000.0).astype(np.uint8))
     detector_results = detector.run(img[:, :, :])["results"]
-    keypoint_list = postprocess(detector_results, rgb_img, depth_img, num_keypoints)
+    keypoint_list = postprocess(
+        detector_results, rgb_img.shape, object_filter_msg, num_keypoints
+    )
 
     # publish information
     keypoint_pub.publish(keypoint_list)
@@ -155,8 +184,11 @@ def main():
 
     image_sub = message_filters.Subscriber(args.color_image_topic, Image)
     depth_sub = message_filters.Subscriber(args.depth_image_topic, Image)
+    object_filter_sub = message_filters.Subscriber(
+        args.object_filter_topic, ObjectFilterList
+    )
     ts = message_filters.ApproximateTimeSynchronizer(
-        [image_sub, depth_sub], args.subscriber_queue_size, 0.1
+        [image_sub, depth_sub, object_filter_sub], args.subscriber_queue_size, 0.1
     )
     ts.registerCallback(
         partial(

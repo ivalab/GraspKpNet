@@ -29,12 +29,15 @@ def main():
     print(f"got our first image with shape {msg.height}x{msg.width}")
 
     cv2.namedWindow(args.image_topic, cv2.WINDOW_AUTOSIZE)
-    print("press any key to exit...")
+    print("press q/esc to exit...")
     while True:
         msg = rospy.wait_for_message(args.image_topic, Image)
         img = bridge.imgmsg_to_cv2(msg, msg.encoding)
         cv2.imshow(args.image_topic, img)
-        if cv2.waitKey(1) != -1:
+        if (
+            cv2.waitKey(20) & 0xFF in [27, ord("q")]
+            or cv2.getWindowProperty(args.image_topic, cv2.WND_PROP_VISIBLE) < 1
+        ):
             break
     cv2.destroyAllWindows()
 
