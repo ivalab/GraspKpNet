@@ -1,20 +1,21 @@
 <launch>
-    <!-- include static publisher and detect nodes -->
-    <include
+  <arg name="num_keypoints" default="1" />
+  <!-- include static publisher and detect nodes -->
+  <include
     file="$(find gknet_perception)/launch/static_image_publisher.launch"
   />
-    <include file="$(find gknet_perception)/launch/detect.launch">
-        <arg name="num_keypoints" default="1" />
-    </include>
+  <include file="$(find gknet_perception)/launch/detect.launch">
+    <arg name="num_keypoints" value="$(arg num_keypoints)" />
+  </include>
 
-    <!-- include the filter gui script and the stream camera script -->
-    <node
+  <!-- include the filter gui script and the stream camera script -->
+  <node
     name="$(anon gknet_filter_gui)"
     pkg="gknet_perception"
     type="filter_gui.py"
     output="screen"
   />
-    <node
+  <node
     name="$(anon gknet_stream_camera)"
     pkg="gknet_perception"
     type="stream_camera.py"
