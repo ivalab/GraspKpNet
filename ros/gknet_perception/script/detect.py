@@ -15,12 +15,14 @@ import numpy as np
 import rospy
 from cv_bridge import CvBridge
 from gknet_msgs.msg import Keypoint, KeypointList, ObjectFilter, ObjectFilterList
+from prometheus_client import Counter, Info, start_http_server
 from sensor_msgs.msg import Image
 
 from gknet.detectors.detector_factory import detector_factory
 from gknet.opts import opts
 
 IMG_LEN = 512
+PROCESSED_IMAGES_COUNTER = Counter("processed_images", "Number of images processed")
 
 
 def preprocess(rgb_img, depth_img):
@@ -97,6 +99,7 @@ def detect_callback(
     object_filter_msg,
     num_keypoints=1,
 ):
+    PROCESSED_IMAGES_COUNTER.inc()
     rgb_img = np.array(
         cv_bridge.imgmsg_to_cv2(rgb_msg, desired_encoding="bgr8"), dtype=np.uint8
     )
@@ -132,7 +135,7 @@ def parse_args():
     parser.add_argument(
         "--object-filter-topic", type=str, default="/gknet/object_filter"
     )
-    parser.add_argument("--num-keypoints", type=int, default=5)
+    parser.add_argument("--num-keypoints", type=int, default=1)
     parser.add_argument("--model", type=str, default="dbmctdet_cornell")
     parser.add_argument(
         "--checkpoint",
@@ -141,6 +144,7 @@ def parse_args():
     )
     parser.add_argument("--publisher-queue-size", type=int, default=1)
     parser.add_argument("--subscriber-queue-size", type=int, default=10)
+    parser.add_argument("--prometheus-port", type=int, default=None)
     # ignore any other args
     args, _ = parser.parse_known_args()
     return args
@@ -155,6 +159,18 @@ def main():
 
     rospy.init_node("detect", anonymous=True, log_level=rospy.INFO)
     cv_bridge = CvBridge()
+
+    if args.prometheus_port:
+        start_http_server(args.prometheus_port)
+        # register information about topics
+        Info("topics", "Information about topics").info(
+            {
+                "color_image_topic": args.color_image_topic,
+                "depth_image_topic": args.depth_image_topic,
+                "keypoints_topic": args.keypoints_topic,
+                "object_filter_topic": args.object_filter_topic,
+            }
+        )
 
     # let's wait for the first message to arrive
     print(f"waiting for message on {args.color_image_topic}")

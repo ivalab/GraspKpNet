@@ -14,5 +14,5 @@ setuptools.setup(
         "shapely",
         "numba",
     ],
-    extras_require={"nms": ["cython"]},
+    extras_require={"nms": ["cython"], "prometheus": ["prometheus-client"]},
 )

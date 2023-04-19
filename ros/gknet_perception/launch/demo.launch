@@ -6,6 +6,7 @@
   />
   <include file="$(find gknet_perception)/launch/detect.launch">
     <arg name="num_keypoints" value="$(arg num_keypoints)" />
+    <arg name="detect_args" value="--prometheus-port 8080" />
   </include>
 
   <!-- include the filter gui script and the stream camera script -->
