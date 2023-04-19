@@ -1,0 +1,10 @@
+<launch>
+  <arg name="args" default="" />
+  <node
+    name="filter_gui"
+    pkg="gknet_perception"
+    type="filter_gui.py"
+    output="screen"
+    args="$(arg args)"
+  />
+</launch>

@@ -145,7 +145,8 @@ def parse_args():
         default="/opt/models/model_dla34_cornell.pth",
     )
     parser.add_argument("--publisher-queue-size", type=int, default=1)
-    parser.add_argument("--subscriber-queue-size", type=int, default=10)
+    parser.add_argument("--subscriber-queue-size", type=int, default=100)
+    parser.add_argument("--slop", type=float, default=0.1)
     parser.add_argument("--prometheus-port", type=int, default=None)
     # ignore any other args
     args, _ = parser.parse_known_args()
@@ -196,7 +197,7 @@ def main():
         args.object_filter_topic, ObjectFilterList
     )
     ts = message_filters.ApproximateTimeSynchronizer(
-        [image_sub, depth_sub, object_filter_sub], args.subscriber_queue_size, 0.1
+        [image_sub, depth_sub, object_filter_sub], args.subscriber_queue_size, args.slop
     )
     ts.registerCallback(
         partial(

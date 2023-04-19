@@ -81,7 +81,8 @@ def parse_args():
         "--annotated-image-topic", type=str, default="/gknet/annotated_image"
     )
     parser.add_argument("--publisher-queue-size", type=int, default=1)
-    parser.add_argument("--subscriber-queue-size", type=int, default=10)
+    parser.add_argument("--subscriber-queue-size", type=int, default=100)
+    parser.add_argument("--slop", type=float, default=0.1)
     # ignore any other args
     args, _ = parser.parse_known_args()
     return args
@@ -116,7 +117,9 @@ def main():
         args.object_filter_topic, ObjectFilterList
     )
     ts = message_filters.ApproximateTimeSynchronizer(
-        [image_sub, keypoint_sub, object_filter_sub], args.subscriber_queue_size, 0.1
+        [image_sub, keypoint_sub, object_filter_sub],
+        args.subscriber_queue_size,
+        args.slop,
     )
     ts.registerCallback(partial(annotate_callback, cv_bridge, annotated_image_pub))
     print(f"registered callbacks, publishing to {args.annotated_image_topic}")
