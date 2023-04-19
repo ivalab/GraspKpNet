@@ -1,0 +1,10 @@
+<launch>
+  <arg name="args" default="" />
+  <node
+    name="static_object_filter_publisher"
+    pkg="gknet_perception"
+    type="static_object_filter_publisher.py"
+    output="screen"
+    args="$(arg args)"
+  />
+</launch>

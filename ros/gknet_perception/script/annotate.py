@@ -61,7 +61,9 @@ def annotate_callback(
     )
     annotated_img = annotate_keypoints(rgb_img, keypoint_msg)
     annotated_img = annotate_object_filter(annotated_img, object_filter_msg)
-    annotated_image_pub.publish(cv_bridge.cv2_to_imgmsg(annotated_img, encoding="bgr8"))
+    msg = cv_bridge.cv2_to_imgmsg(annotated_img, encoding="bgr8")
+    msg.header = rgb_msg.header
+    annotated_image_pub.publish(msg)
 
 
 def parse_args():

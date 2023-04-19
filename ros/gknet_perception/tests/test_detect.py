@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 import rospy
 from cv_bridge import CvBridge
@@ -21,6 +20,23 @@ def test_static_image_publisher():
     assert msg, "no message received"
 
 
+def test_gknet_object_filter_topic_empty():
+    msg = rospy.wait_for_message("/gknet/object_filter", ObjectFilterList)
+    assert not msg.objects, "object filter should be empty"
+
+
+def test_gknet_object_filter_topic_header_timestamp_increases():
+    n = 5
+    msgs = []
+    for _ in range(n):
+        msg = rospy.wait_for_message("/gknet/object_filter", ObjectFilterList)
+        msgs.append(msg)
+    print(msgs)
+    assert all(
+        [msgs[i].header.stamp < msgs[i + 1].header.stamp for i in range(n - 1)]
+    ), "header timestamps should increase"
+
+
 def test_gknet_keypoints():
     msg = rospy.wait_for_message("/gknet/keypoints", KeypointList)
     assert msg.keypoints, "no keypoints received"
@@ -35,11 +51,6 @@ def test_gknet_keypoints():
 def test_gknet_annotated_image():
     msg = rospy.wait_for_message("/gknet/annotated_image", Image)
     assert msg, "no message received"
-
-
-def test_gknet_object_filter_topic_empty():
-    msg = rospy.wait_for_message("/gknet/object_filter", ObjectFilterList)
-    assert not msg.objects, "object filter should be empty"
 
 
 @pytest.fixture()
@@ -63,9 +74,10 @@ def test_gknet_keypoints_with_object_filter(object_filter_pub, num_corners):
     ]
     of = ObjectFilterList()
     of.objects = [ObjectFilter(bbox=corners[i]) for i in range(num_corners)]
-    object_filter_pub.publish(of)
 
     for _ in range(num_retries):
+        of.header.stamp = rospy.Time.now()
+        object_filter_pub.publish(of)
         msg = rospy.wait_for_message("/gknet/object_filter", ObjectFilterList)
         if len(msg.objects) == num_corners:
             break
@@ -74,6 +86,8 @@ def test_gknet_keypoints_with_object_filter(object_filter_pub, num_corners):
 
     # top 3 keypoints from each object
     for _ in range(num_retries):
+        of.header.stamp = rospy.Time.now()
+        object_filter_pub.publish(of)
         msg = rospy.wait_for_message("/gknet/keypoints", KeypointList)
         if len(msg.keypoints) == num_corners * 3:
             break

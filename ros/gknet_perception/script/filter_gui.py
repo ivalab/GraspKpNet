@@ -152,6 +152,7 @@ def publish_object_filter_callback(pub, bboxes):
         # our message translates the pair of points into a flat list
         msg.objects.append(ObjectFilter(bbox=bbox[0] + bbox[1]))
 
+    msg.header.stamp = rospy.Time.now()
     pub.publish(msg)
 
 

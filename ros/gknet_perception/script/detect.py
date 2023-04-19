@@ -87,7 +87,9 @@ def postprocess(detector_output, shape, object_filter_list, num_keypoints):
     for kps in kp_per_filer:
         kps_msg.extend(kps)
 
-    return KeypointList(keypoints=kps_msg)
+    msg = KeypointList(keypoints=kps_msg)
+    msg.header.stamp = rospy.Time.now()
+    return msg
 
 
 def detect_callback(
@@ -177,18 +179,8 @@ def main():
     rospy.wait_for_message(args.color_image_topic, Image)
     print(f"waiting for message on {args.depth_image_topic}")
     rospy.wait_for_message(args.depth_image_topic, Image)
-    print(f"waiting for message on {args.object_filter_topic} for 1 second")
-    try:
-        rospy.wait_for_message(args.object_filter_topic, ObjectFilterList, timeout=1)
-    except rospy.ROSException:
-        print("no object filter received, using default")
-        msg = ObjectFilterList(objects=[])
-        object_filter_pub = rospy.Publisher(
-            args.object_filter_topic, ObjectFilterList, queue_size=1, latch=True
-        )
-        object_filter_pub.publish(msg)
-        print(f"waiting for message on {args.object_filter_topic}")
-        rospy.wait_for_message(args.object_filter_topic, ObjectFilterList)
+    print(f"waiting for message on {args.object_filter_topic}")
+    rospy.wait_for_message(args.object_filter_topic, ObjectFilterList)
     print("input topics ready for processing")
 
     keypoint_pub = rospy.Publisher(
