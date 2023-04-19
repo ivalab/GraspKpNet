@@ -1,0 +1,13 @@
+<launch>
+  <include file="$(find gknet_perception)/launch/static_image_publisher.launch" />
+  <include file="$(find gknet_perception)/launch/detect.launch" />
+  <arg name="test_name" value="test_detect" />
+  <param name="test_module" value="$(find gknet_perception)/tests" />
+  <test
+    test-name="$(arg test_name)"
+    pkg="ros_pytest"
+    type="ros_pytest_runner"
+    args="-k $(arg test_name) -vvv -s"
+    time-limit="30.0"
+  />
+</launch>

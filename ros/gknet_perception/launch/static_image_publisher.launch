@@ -1,0 +1,31 @@
+<launch>
+  <!-- args for calibration parameters -->
+  <arg
+    name="image_path"
+    default="$(find gknet_perception)/assets/tabletop_01"
+  />
+  <arg name="color_image_filename" default="rgb.jpg" />
+  <arg name="depth_image_filename" default="depth.jpg" />
+  <arg name="color_image_topic" default="/camera/color/image_raw" />
+  <arg
+    name="depth_image_topic"
+    default="/camera/aligned_depth_to_color/image_raw"
+  />
+  <arg name="args" default="" />
+
+  <!-- now let's run our detection script -->
+  <node
+    name="gknet_static_image_publisher"
+    pkg="gknet_perception"
+    type="static_image_publisher.py"
+    output="screen"
+    args="
+      --image-path $(arg image_path)
+      --color-image-filename $(arg color_image_filename)
+      --depth-image-filename $(arg depth_image_filename)
+      --color-image-topic $(arg color_image_topic)
+      --depth-image-topic $(arg depth_image_topic)
+      $(arg args)
+    "
+  />
+</launch>

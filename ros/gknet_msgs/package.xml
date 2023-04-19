@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<package format="2">
+  <name>gknet_msgs</name>
+  <version>0.0.0</version>
+  <description>ROS package for messages published by GKNet</description>
+  <maintainer email="acmiyaguchi@gatech.edu">Anthony Miyaguchi</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+
+  <test_depend>ros_pytest</test_depend>
+  <exec_depend>python3-numpy</exec_depend>
+</package>

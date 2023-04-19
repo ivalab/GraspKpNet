@@ -389,8 +389,8 @@ class opts(object):
             help="number of hourglass stacks used.",
         )
 
-    def parse(self, args=""):
-        if args == "":
+    def parse(self, args=[]):
+        if not args:
             opt = self.parser.parse_args()
         else:
             opt = self.parser.parse_args(args)
@@ -480,7 +480,7 @@ class opts(object):
         print("heads", opt.heads)
         return opt
 
-    def init(self, args=""):
+    def init(self, args=[]):
         default_dataset_info = {
             "dbmctdet": {
                 "default_resolution": [512, 512],
