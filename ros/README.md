@@ -9,6 +9,19 @@ Read the `docker` directory for more information on how to install the necessary
 
 ## testing
 
+Ensure you have the ability to run X11 applications via docker on your host.
+See [this ROS wiki article](http://wiki.ros.org/docker/Tutorials/GUI) for hints.
+In most cases, you should be able to set xhost to allow connections from docker:
+
+```bash
+xhost +local:docker
+
+# in case this doesn't work, try this
+xhost +local:root
+```
+
+This assumes that you have created a docker group and added your user to it [as per the official docs](https://docs.docker.com/engine/install/linux-postinstall/).
+
 We can do some very basic testing with a simulated image from the d435i camera.
 Run each of the following commands in their own terminal.
 
