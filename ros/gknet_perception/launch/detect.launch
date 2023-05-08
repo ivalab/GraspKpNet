@@ -1,15 +1,18 @@
 <launch>
-  <!-- args for calibration parameters -->
+  <!-- args for detection parameters -->
   <arg name="color_image_topic" default="/camera/color/image_raw" />
   <arg
     name="depth_image_topic"
     default="/camera/aligned_depth_to_color/image_raw"
   />
+  <arg name="object_filter_topic" default="/gknet/object_filter" />
   <arg name="keypoints_topic" default="/gknet/keypoints" />
   <arg name="annotated_image_topic" default="/gknet/annotated_image" />
   <arg name="model" default="dbmctdet_cornell" />
   <arg name="checkpoint" default="/opt/models/model_dla34_cornell.pth" />
-  <arg name="num_keypoints" default="10" />
+  <arg name="num_keypoints" default="1" />
+  <arg name="detect_args" default="" />
+  <arg name="annotate_args" default="" />
 
   <!-- now let's run our detection script -->
   <node
@@ -20,11 +23,26 @@
     args="
       --color-image-topic $(arg color_image_topic)
       --depth-image-topic $(arg depth_image_topic)
+      --object-filter-topic $(arg object_filter_topic)
       --keypoints-topic $(arg keypoints_topic)
-      --annotated-image-topic $(arg annotated_image_topic)
       --model $(arg model)
       --checkpoint $(arg checkpoint)
       --num-keypoints $(arg num_keypoints)
+      $(arg detect_args)
+    "
+  />
+  <!-- launch the annotation script -->
+  <node
+    name="$(anon gknet_annotate)"
+    pkg="gknet_perception"
+    type="annotate.py"
+    output="screen"
+    args="
+      --color-image-topic $(arg color_image_topic)
+      --object-filter-topic $(arg object_filter_topic)
+      --keypoints-topic $(arg keypoints_topic)
+      --annotated-image-topic $(arg annotated_image_topic)
+      $(arg annotate_args)
     "
   />
 </launch>

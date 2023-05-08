@@ -14,8 +14,7 @@ services:
       shm_size: 2gb
       volumes:
         - ./:/catkin_ws/src/app
-        - /tmp/.X11-unix:/tmp/.X11-unix
-        - ~/.Xauthority:/root/.Xauthority
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
       environment:
         DISPLAY: $DISPLAY
         QT_X11_NO_MITSHM: 1

@@ -49,6 +49,8 @@ pillow==9.4.0
     # via
     #   matplotlib
     #   torchvision
+prometheus-client==0.16.0
+    # via gknet (setup.py)
 pyparsing==3.0.9
     # via matplotlib
 python-dateutil==2.8.2

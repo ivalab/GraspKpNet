@@ -27,11 +27,7 @@ def parse_args():
         type=str,
         default="/camera/aligned_depth_to_color/image_raw",
     )
-    parser.add_argument(
-        "--display",
-        action="store_true",
-        help="display the images as they are published",
-    )
+    parser.add_argument("--rate", type=float, default=60, help="publish rate in Hz")
     # ignore any other args
     args, _ = parser.parse_known_args()
     return args
@@ -60,19 +56,19 @@ def main():
 
     rospy.init_node("static_image_topic", anonymous=True)
     cv_bridge = CvBridge()
-    color_pub = rospy.Publisher(args.color_image_topic, Image, queue_size=1, latch=True)
-    depth_pub = rospy.Publisher(args.depth_image_topic, Image, queue_size=1, latch=True)
+    color_pub = rospy.Publisher(args.color_image_topic, Image, queue_size=1)
+    depth_pub = rospy.Publisher(args.depth_image_topic, Image, queue_size=1)
 
-    color_pub.publish(cv_bridge.cv2_to_imgmsg(color_image, encoding="bgr8"))
-    depth_pub.publish(cv_bridge.cv2_to_imgmsg(depth_image, encoding="32FC1"))
-    if args.display:
-        # show image
-        cv2.imshow("color", color_image)
-        cv2.imshow("depth", depth_image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    print("spinning")
-    rospy.spin()
+    # publish in a loop
+    rate = rospy.Rate(args.rate)
+    while not rospy.is_shutdown():
+        rate.sleep()
+        msg = cv_bridge.cv2_to_imgmsg(color_image, encoding="bgr8")
+        msg.header.stamp = rospy.Time.now()
+        color_pub.publish(msg)
+        msg = cv_bridge.cv2_to_imgmsg(depth_image, encoding="32FC1")
+        msg.header.stamp = rospy.Time.now()
+        depth_pub.publish(msg)
 
 
 if __name__ == "__main__":

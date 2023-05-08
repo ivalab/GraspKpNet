@@ -1,13 +1,16 @@
 <launch>
+  <include file="$(find gknet_perception)/launch/static_object_filter_publisher.launch" />
   <include file="$(find gknet_perception)/launch/static_image_publisher.launch" />
-  <include file="$(find gknet_perception)/launch/detect.launch" />
-  <arg name="test_name" value="test_detect" />
+  <include file="$(find gknet_perception)/launch/detect.launch">
+    <arg name="num_keypoints" value="3" />
+  </include>
+  <arg name="test_name" value="test_gknet" />
   <param name="test_module" value="$(find gknet_perception)/tests" />
   <test
     test-name="$(arg test_name)"
     pkg="ros_pytest"
     type="ros_pytest_runner"
     args="-k $(arg test_name) -vvv -s"
-    time-limit="30.0"
+    time-limit="15.0"
   />
 </launch>
