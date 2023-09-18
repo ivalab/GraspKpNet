@@ -66,7 +66,7 @@ The results confirm the hypothesis that grasp keypoints are an effective output 
 
 ## Installation
 
-Please refer to for [INSTALL.md](readme/INSTALL.md) installation instructions.
+Please refer to for [INSTALL.md](docs/INSTALL.md) installation instructions.
 
 ## Dataset
 
