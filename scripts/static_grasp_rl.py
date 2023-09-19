@@ -1,5 +1,6 @@
-import sys
+import _init_paths
 
+import sys
 import cv2
 import cv2.aruco as aruco
 import numpy as np
@@ -232,7 +233,7 @@ def KpsToGrasppose(
     return [center_3d[0], center_3d[1], center_3d[2], orientation, dist]
 
 
-def run(opt, pipeline, align, depth_scale, video_saver, pub_res):
+def run(opt, pipeline, align, depth_scale, pub_res):
     Dataset = dataset_factory[opt.dataset]
     opt = opts().update_dataset_info_and_set_heads(opt, Dataset)
     print(opt)
@@ -261,6 +262,8 @@ def run(opt, pipeline, align, depth_scale, video_saver, pub_res):
         # remove aruco tag from input image to avoid mis-detection
         if corners is not None:
             img_wo_at = aruco_tag_remove(img, corners)
+        else:
+            img_wo_at = img            
 
         # pre-process rgb and depth images
         inp_image = pre_process(img_wo_at, depth)
@@ -270,7 +273,7 @@ def run(opt, pipeline, align, depth_scale, video_saver, pub_res):
         ret = ret["results"]
 
         loc_ori = KpsToGrasppose(
-            ret, img, depth_raw, M_CL, M_BL, cameraMatrix, video_saver
+            ret, img, depth_raw, M_CL, M_BL, cameraMatrix
         )
 
         msg = Float64MultiArray()
@@ -281,7 +284,6 @@ def run(opt, pipeline, align, depth_scale, video_saver, pub_res):
         if k == ord("s"):
             break
 
-    video_saver.release()
     cv2.destroyAllWindows()
     # Stop streaming
     pipeline.stop()
