@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.7.0-devel-ubuntu20.04
+FROM nvidia/cuda:11.7.1-devel-ubuntu20.04
 
 # NOTE: We need cuda devel to build DCNv2, but we don't necessarily need it to
 # run inference. This should probably become a multi-part build if we care about
@@ -36,6 +36,9 @@ RUN apt-get update && \
     apt clean
 
 RUN pip install --upgrade pip wheel cython
+
+# As of matplotlib 3.8.0, Python3.8 is no longer supported, so install our pinned version
+RUN pip install matplotlib==3.7.1
 
 RUN apt update && \
     apt install -y --no-install-recommends \
